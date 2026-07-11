@@ -6,16 +6,25 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.MonetizationOn
+import androidx.compose.material.icons.filled.Quiz
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.bambiloff.kvantor.ui.theme.KvantorTheme
 import com.bambiloff.kvantor.ui.*
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.collectLatest
@@ -48,13 +58,15 @@ class LessonActivity : ComponentActivity() {
         }
 
         setContent {
-            val vm: LessonViewModel = viewModel(factory = factory)
-            LessonScreen(
-                viewModel    = vm,
-                courseType   = courseType,
-                uid          = uid,
-                onBackToMenu = { finish() }
-            )
+            KvantorTheme {
+                val vm: LessonViewModel = viewModel(factory = factory)
+                LessonScreen(
+                    viewModel    = vm,
+                    courseType   = courseType,
+                    uid          = uid,
+                    onBackToMenu = { finish() }
+                )
+            }
         }
     }
 }
@@ -95,21 +107,21 @@ fun LessonScreen(
         viewModel.events.collectLatest {
             when (it) {
                 LessonViewModel.UiEvent.NoLives ->
-                    snack.showSnackbar("У вас закінчились життя. Спробуйте пізніше")
+                    snack.showSnackbar("You are out of Lives. Try again later")
                 LessonViewModel.UiEvent.NoHints ->
-                    snack.showSnackbar("Підказок більше нема")
+                    snack.showSnackbar("No Hints left")
                 LessonViewModel.UiEvent.NoCoins ->      // ← нова гілка
-                    snack.showSnackbar("Недостатньо монет для покупки")
+                    snack.showSnackbar("Not enough Coins to buy this")
                 LessonViewModel.UiEvent.SaveFailed ->
-                    snack.showSnackbar("Не вдалося зберегти прогрес")
+                    snack.showSnackbar("Could not save progress")
                 LessonViewModel.UiEvent.AchievementUnlockFailed ->
-                    snack.showSnackbar("Прогрес збережено, але досягнення не відкрито")
+                    snack.showSnackbar("Progress saved, but the Achievement was not unlocked")
                 is LessonViewModel.UiEvent.PurchaseFinished -> {
                     val message = when (it.result) {
-                        PurchaseResult.SUCCESS -> "Покупку виконано"
-                        PurchaseResult.INSUFFICIENT_COINS -> "Недостатньо монет для покупки"
-                        PurchaseResult.FULL_LIVES -> "Життя вже повні"
-                        PurchaseResult.FAILURE -> "Не вдалося виконати покупку"
+                        PurchaseResult.SUCCESS -> "Purchase complete"
+                        PurchaseResult.INSUFFICIENT_COINS -> "Not enough Coins"
+                        PurchaseResult.FULL_LIVES -> "Lives are already full"
+                        PurchaseResult.FAILURE -> "Could not complete purchase"
                     }
                     snack.showSnackbar(message)
                 }
@@ -127,7 +139,20 @@ fun LessonScreen(
         /* ---- TOP ---- */
         topBar = {
             TopAppBar(
-                title = { Text("Kvantor", color = KvTextColor) },
+                title = {
+                    Column {
+                        Text(
+                            "Kvantor",
+                            color = KvTextColor,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Text(
+                            if (courseType == "javascript") "JavaScript quest" else "Python quest",
+                            color = KvMutedText,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
+                },
                 actions = {
                     TextButton(
                         enabled = !savingProgress,
@@ -140,7 +165,7 @@ fun LessonScreen(
                             }
                         }
                     ) {
-                        Text("Меню", color = KvTextColor)
+                        Text("Menu", color = KvCyan)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = KvBg)
@@ -155,13 +180,13 @@ fun LessonScreen(
                     Modifier
                         .fillMaxWidth()
                         .background(KvBg)
-                        .padding(horizontal = 12.dp, vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    StatusChip(Icons.Default.Favorite,       livesLabel, "Lives")   // ← livesLabel
-                    StatusChip(Icons.Default.Lightbulb,      hints.toString(),  "Hints")
-                    StatusChip(Icons.Default.MonetizationOn, coins.toString(),  "Coins")
+                    StatusChip(Icons.Default.Favorite, livesLabel, "Lives", modifier = Modifier.weight(1f))
+                    StatusChip(Icons.Default.Lightbulb, hints.toString(), "Hints", modifier = Modifier.weight(1f))
+                    StatusChip(Icons.Default.MonetizationOn, coins.toString(), "Coins", modifier = Modifier.weight(1f))
                 }
 
                 /* прогрес */
@@ -178,10 +203,17 @@ fun LessonScreen(
     ) { padding ->
         PageContainer(Modifier.padding(padding)) {
             when {
-                modules.isEmpty() -> Box(
-                    Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) { CircularProgressIndicator(color = KvAccent) }
+                modules.isEmpty() -> KvStateCard(
+                    icon = Icons.Default.HourglassEmpty,
+                    title = "Loading modules",
+                    body = "Preparing lessons, quizzes, and coding tasks."
+                ) {
+                    LinearProgressIndicator(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = KvCyan,
+                        trackColor = KvAccent.copy(alpha = .18f)
+                    )
+                }
 
                 courseCompleted -> CourseFinishedScreen(onBackToMenu)
 
@@ -202,7 +234,7 @@ fun LessonScreen(
             /* показуємо підказку під усім контентом (як snackbar) */
             showHint?.let { hint ->
                 LaunchedEffect(hint) {
-                    snack.showSnackbar("💡 $hint")
+                    snack.showSnackbar("Hint: $hint")
                     viewModel.clearHint()
                 }
             }
@@ -224,58 +256,91 @@ fun LessonModuleContent(
 ) {
     val page = module.pages.getOrNull(pageIndex)
     var done by remember(module.id, pageIndex, page) { mutableStateOf(page is Page.Theory) }
+    val accent = if (courseType == "javascript") KvGold else KvCyan
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(24.dp),
+            .padding(vertical = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.spacedBy(18.dp)
     ) {
-        /* HERO-іконка */
         AnimatedVisibility(visible = true, enter = fadeIn()) {
-            if (courseType == "javascript") {
-                Icon(Icons.Filled.Code, null, tint = KvAccent, modifier = Modifier.size(72.dp))
-            } else Text("💻", fontSize = 64.sp)
+            Surface(
+                shape = MaterialTheme.shapes.large,
+                color = accent.copy(alpha = .16f),
+                border = BorderStroke(1.dp, accent.copy(alpha = .28f))
+            ) {
+                Icon(
+                    Icons.Filled.Code,
+                    contentDescription = null,
+                    tint = accent,
+                    modifier = Modifier
+                        .size(72.dp)
+                        .padding(16.dp)
+                )
+            }
         }
 
-        Spacer(Modifier.height(16.dp))
-
         Text(
-            text      = "Модуль: ${module.title}",
+            text      = "Module: ${module.title}",
             style     = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
             color     = KvTextColor,
             textAlign = TextAlign.Center
         )
-        Spacer(Modifier.height(32.dp))
 
-        /* ——— контент сторінки ——— */
-        when (page) {
-            is Page.Theory     -> Text(page.text, color = KvTextColor, textAlign = TextAlign.Center)
+        KvGlassCard(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(20.dp)
+        ) {
+            when (page) {
+                is Page.Theory -> {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null, tint = accent)
+                        Text("Theory", color = KvTextColor, style = MaterialTheme.typography.titleMedium)
+                    }
+                    Text(
+                        page.text,
+                        color = KvMutedText,
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Start
+                    )
+                }
 
-            is Page.Test       -> TestPage(
-                page,
-                vm,
-                CourseProgressRules.rewardPageId(courseType, module.id, pageIndex)
-            ) { done = it }
-            is Page.CodingTask -> CodingTaskView(page) { done = it }
+                is Page.Test -> TestPage(
+                    page,
+                    vm,
+                    CourseProgressRules.rewardPageId(courseType, module.id, pageIndex)
+                ) { done = it }
+                is Page.CodingTask -> CodingTaskView(page) { done = it }
 
-            is Page.Final      -> {
-                Text(page.message, color = KvTextColor, textAlign = TextAlign.Center)
-                Spacer(Modifier.height(32.dp))
-                KvantorButton(
-                    text    = if (isLastModule) "Повернутися в меню" else "До наступного модуля",
-                    onClick = onNext
-                )
+                is Page.Final -> {
+                    Icon(Icons.Default.CheckCircle, contentDescription = null, tint = KvSuccess, modifier = Modifier.size(42.dp))
+                    Text(cleanGamifiedText(page.message), color = KvMutedText, textAlign = TextAlign.Center)
+                    KvantorButton(
+                        text    = if (isLastModule) "Back to menu" else "Next module",
+                        onClick = onNext,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                null -> {
+                    Text("Page not found", color = KvMutedText)
+                }
             }
-
-            null -> {}
         }
 
         if (done && page !is Page.Final) {
-            Spacer(Modifier.height(32.dp))
-            KvantorButton("Далі", onClick = onNext)
+            KvantorButton(
+                "Continue",
+                onClick = onNext,
+                leadingIcon = Icons.Default.CheckCircle,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }
@@ -283,19 +348,31 @@ fun LessonModuleContent(
 /* ───────────── Фінальний екран ───────────── */
 @Composable
 fun CourseFinishedScreen(onBackToMenu: () -> Unit) {
-    Column(
-        Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+    KvGlassCard(
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(24.dp)
     ) {
+        Icon(
+            Icons.Default.EmojiEvents,
+            contentDescription = null,
+            tint = KvGold,
+            modifier = Modifier
+                .size(56.dp)
+                .align(Alignment.CenterHorizontally)
+        )
         Text(
-            "🎉 Вітаємо!\nВи завершили всі модулі.",
+            "Congratulations!\nYou completed all modules.",
             style     = MaterialTheme.typography.titleLarge,
             color     = KvTextColor,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
         )
-        Spacer(Modifier.height(32.dp))
-        KvantorButton("Повернутися в меню", onClick = onBackToMenu)
+        KvantorButton(
+            "Back to menu",
+            onClick = onBackToMenu,
+            leadingIcon = Icons.Default.CheckCircle,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 
@@ -312,28 +389,59 @@ fun TestPage(
     var answeredCorrect by remember(pageId) { mutableStateOf(false) }
     var lastQuizResult by remember(pageId) { mutableStateOf<QuizAttemptResult?>(null) }
 
-    Text(test.question, color = KvTextColor, textAlign = TextAlign.Center)
-    Spacer(Modifier.height(24.dp))
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Icon(Icons.Default.Quiz, contentDescription = null, tint = KvCyan)
+        Text("Quiz", color = KvTextColor, style = MaterialTheme.typography.titleMedium)
+    }
+    Text(
+        test.question,
+        color = KvMutedText,
+        style = MaterialTheme.typography.bodyLarge,
+        textAlign = TextAlign.Start
+    )
 
     test.answers.forEachIndexed { idx, ans ->
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            RadioButton(
-                selected = selected == idx,
-                onClick  = {
-                    if (!answeredCorrect) {
-                        selected = idx
-                        checked = false
-                        lastQuizResult = null
-                        onDone(false)
-                    }
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(enabled = !answeredCorrect) {
+                    selected = idx
+                    checked = false
+                    lastQuizResult = null
+                    onDone(false)
                 },
-                colors   = RadioButtonDefaults.colors(
-                    selectedColor   = KvTextColor,
-                    unselectedColor = KvTextColor
-                )
+            shape = RoundedCornerShape(8.dp),
+            color = if (selected == idx) KvAccent.copy(alpha = .22f) else KvSurfaceHi.copy(alpha = .62f),
+            border = BorderStroke(
+                1.dp,
+                if (selected == idx) KvCyan.copy(alpha = .55f) else KvAccentSoft.copy(alpha = .18f)
             )
-            Spacer(Modifier.width(8.dp))
-            Text(ans, color = KvTextColor)
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadioButton(
+                    selected = selected == idx,
+                    onClick  = {
+                        if (!answeredCorrect) {
+                            selected = idx
+                            checked = false
+                            lastQuizResult = null
+                            onDone(false)
+                        }
+                    },
+                    colors   = RadioButtonDefaults.colors(
+                        selectedColor   = KvCyan,
+                        unselectedColor = KvMutedText
+                    )
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(ans, color = KvTextColor, style = MaterialTheme.typography.bodyMedium)
+            }
         }
     }
 
@@ -341,16 +449,17 @@ fun TestPage(
     if (test.hint != null) {
         Spacer(Modifier.height(8.dp))
         KvantorButton(
-            text    = "Підказка (${vm.hints.collectAsState().value})",
+            text    = "Hint (${vm.hints.collectAsState().value})",
             enabled = vm.hints.collectAsState().value > 0,
-            onClick = { vm.requestHint(test) }   // ← явне ім’я параметра
+            onClick = { vm.requestHint(test) },
+            leadingIcon = Icons.Default.Lightbulb,
+            modifier = Modifier.fillMaxWidth()
         )
     }
 
     /* ---- Перевірка ---- */
-    Spacer(Modifier.height(24.dp))
     KvantorButton(
-        text    = "Перевірити",
+        text    = "Check answer",
         enabled = selected != -1 && !answeredCorrect,
         onClick = {
             val result = vm.checkAnswer(test, selected, pageId)
@@ -358,28 +467,62 @@ fun TestPage(
             answeredCorrect = result.correct
             lastQuizResult = result
             onDone(result.canProceed)
-        }
+        },
+        leadingIcon = Icons.Default.Quiz,
+        modifier = Modifier.fillMaxWidth()
     )
 
     /* ---- Результат ---- */
     val lastResult = lastQuizResult
     if (checked && lastResult != null) {
-        Spacer(Modifier.height(16.dp))
-        Text(
-            QuizProgressRules.resultMessage(lastResult),
-            color     = if (lastResult.correct) KvAccent else KvAccent.copy(.7f),
-            textAlign = TextAlign.Center
-        )
+        Surface(
+            shape = RoundedCornerShape(8.dp),
+            color = if (lastResult.correct) KvSuccess.copy(alpha = .16f) else MaterialTheme.colorScheme.error.copy(alpha = .14f),
+            border = BorderStroke(
+                1.dp,
+                if (lastResult.correct) KvSuccess.copy(alpha = .4f) else MaterialTheme.colorScheme.error.copy(alpha = .38f)
+            )
+        ) {
+            Row(
+                modifier = Modifier.padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    if (lastResult.correct) Icons.Default.CheckCircle else Icons.Default.ErrorOutline,
+                    contentDescription = null,
+                    tint = if (lastResult.correct) KvSuccess else MaterialTheme.colorScheme.error
+                )
+                Text(
+                    cleanGamifiedText(QuizProgressRules.resultMessage(lastResult)),
+                    color = KvTextColor,
+                    textAlign = TextAlign.Start,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
     }
 }
 
 /* ───────────── Допоміжне: статус-чіп ───────────── */
 @Composable
-private fun StatusChip(icon: ImageVector, valueText: String, label: String) = Row(
-    verticalAlignment     = Alignment.CenterVertically,
-    horizontalArrangement = Arrangement.spacedBy(4.dp)
-) {
-    Icon(icon, null, tint = KvAccent, modifier = Modifier.size(16.dp))
-    Text(valueText, color = KvTextColor, fontSize = 14.sp)
-    Text(label,      color = KvTextColor, fontSize = 12.sp)
-}
+private fun StatusChip(
+    icon: ImageVector,
+    valueText: String,
+    label: String,
+    modifier: Modifier = Modifier
+) = KvMetricChip(
+    icon = icon,
+    value = valueText,
+    label = label,
+    modifier = modifier,
+    accent = KvCyan
+)
+
+private fun cleanGamifiedText(text: String): String = text
+    .replace("✅ ", "")
+    .replace("❌ ", "")
+    .replace("🎉 ", "")
+    .replace("❤️", "Life")
+    .replace("Правильно", "Correct")
+    .replace("Неправильно", "Incorrect")

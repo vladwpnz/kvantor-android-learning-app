@@ -4,5 +4,6 @@
     <style name="Theme.Kvantor" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:statusBarColor">#210B36</item>
         <item name="android:navigationBarColor">#210B36</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>

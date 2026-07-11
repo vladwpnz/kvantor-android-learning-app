@@ -1,53 +1,80 @@
 package com.bambiloff.kvantor.ui.theme
 
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import com.bambiloff.kvantor.KvantorSystemBars
 
 private val DarkColorScheme = darkColorScheme(
-    primary        = Color(0xFF8C52FF),  // кнопки і іконки
-    onPrimary      = Color.White,
-    secondary      = Color(0xFF8C52FF),
-    onSecondary    = Color.White,
-    tertiary       = Color(0xFF8C52FF),
-    onTertiary     = Color.White,
-    background     = Color(0xFF390D58),  // фон екрану
-    onBackground   = Color.White,
-    surface        = Color(0xFF390D58),
-    onSurface      = Color.White,
-    error          = Color(0xFFCF6679),
-    onError        = Color.White
+    primary = KvantorViolet,
+    onPrimary = Color.White,
+    primaryContainer = KvantorSurfaceHigh,
+    onPrimaryContainer = Color.White,
+    secondary = KvantorCyan,
+    onSecondary = KvantorInk,
+    secondaryContainer = Color(0xFF12344B),
+    onSecondaryContainer = Color.White,
+    tertiary = KvantorGold,
+    onTertiary = KvantorInk,
+    background = KvantorDeepPurple,
+    onBackground = KvantorText,
+    surface = KvantorSurface,
+    onSurface = KvantorText,
+    surfaceVariant = KvantorSurfaceHigh,
+    onSurfaceVariant = KvantorMuted,
+    outline = KvantorVioletSoft.copy(alpha = .45f),
+    error = KvantorError,
+    onError = Color.White
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary        = Purple40,
-    onPrimary      = Color.White,
-    secondary      = PurpleGrey40,
-    onSecondary    = Color.White,
-    tertiary       = Pink40,
-    onTertiary     = Color.White,
-    background     = Color.White,
-    onBackground   = Color.Black,
-    surface        = Color.White,
-    onSurface      = Color.Black,
-    error          = Color(0xFFB00020),
-    onError        = Color.White
+    primary = KvantorPurple,
+    onPrimary = Color.White,
+    primaryContainer = Color(0xFFEDE3FF),
+    onPrimaryContainer = KvantorInk,
+    secondary = Color(0xFF007A92),
+    onSecondary = Color.White,
+    secondaryContainer = Color(0xFFD7F8FF),
+    onSecondaryContainer = KvantorInk,
+    tertiary = Color(0xFF8A6200),
+    onTertiary = Color.White,
+    background = KvantorLightBg,
+    onBackground = KvantorInk,
+    surface = KvantorLightSurface,
+    onSurface = KvantorInk,
+    surfaceVariant = Color(0xFFF0E8FF),
+    onSurfaceVariant = Color(0xFF5C4B76),
+    outline = Color(0xFFB5A5D3),
+    error = Color(0xFFB3261E),
+    onError = Color.White
+)
+
+private val KvantorShapes = Shapes(
+    extraSmall = RoundedCornerShape(6.dp),
+    small = RoundedCornerShape(8.dp),
+    medium = RoundedCornerShape(8.dp),
+    large = RoundedCornerShape(8.dp),
+    extraLarge = RoundedCornerShape(8.dp)
 )
 
 @Composable
 fun KvantorTheme(
-    darkTheme: Boolean = true,       // тепер за замовчуванням — темна тема
-    dynamicColor: Boolean = false,   // Monet вимкнено
+    darkTheme: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    KvantorSystemBars()
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography  = Typography,
-        content     = content
+        typography = Typography,
+        shapes = KvantorShapes,
+        content = content
     )
 }

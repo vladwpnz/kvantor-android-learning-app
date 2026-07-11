@@ -8,34 +8,38 @@ import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.DataObject
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.RestartAlt
+import androidx.compose.material.icons.filled.School
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp // KvBg = #390D58, KvAccent = #8C52FF
 import com.bambiloff.kvantor.ui.theme.KvantorTheme
 import com.bambiloff.kvantor.ui.theme.Rubik
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
-import androidx.compose.ui.text.style.TextAlign
-import androidx. compose. ui. platform. testTag
+import androidx.compose.ui.platform.testTag
 
 
 class JavaScriptMainActivity : ComponentActivity() {
@@ -103,7 +107,7 @@ class JavaScriptMainActivity : ComponentActivity() {
 @Composable
 fun JavaScriptScreen() {
     Text(
-        "Курс JavaScript",
+        "JavaScript course",
         modifier = Modifier.testTag("js_header")
     )
 }
@@ -116,12 +120,6 @@ private fun JavaScriptMenu(
     onStartFromBeginning: () -> Unit,
     onContinueCourse: () -> Unit
 ) {
-
-    /* базові кольори (повністю як у Python‑екрані) */
-    val bg      = if (dark) KvBg else Color(0xFFF5F5F5)
-    val accent  = KvAccent
-    val textClr = if (dark) KvTextColor else Color(0xFF1A1A1A)
-
     val context = LocalContext.current
     val uid  = FirebaseAuth.getInstance().currentUser?.uid
     val db   = FirebaseFirestore.getInstance()
@@ -145,140 +143,199 @@ private fun JavaScriptMenu(
 
     /* список модулів */
     val topics = listOf(
-        "Вступ"            to "Що таке JavaScript, його роль у веб‑розробці.",
-        "Змінні та типи"    to "var, let, const і базові типи даних.",
-        "Функції"          to "Оголошення та виклик, стрілочні функції.",
-        "Цикли та умови"    to "for, while, if/else — керування потоком.",
-        "Масиви та об'єкти" to "Методи масивів, властивості об'єктів.",
-        "DOM та події"      to "Маніпуляція DOM‑деревом, обробники подій."
+        "Introduction"        to "What JavaScript is and how it powers the web.",
+        "Variables and types" to "var, let, const, and core data types.",
+        "Functions"           to "Declarations, calls, and arrow functions.",
+        "Loops and conditions" to "for, while, and if/else flow control.",
+        "Arrays and objects"  to "Array methods and object properties.",
+        "DOM and events"      to "DOM manipulation and event handlers."
     )
 
-    /* ----------------- UI ----------------- */
-    Box(Modifier.fillMaxSize().background(bg)) {
+    KvGradientBackground(
+        modifier = Modifier.testTag("js_header"),
+        darkTheme = dark
+    ) {
         Column(
             Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp, vertical = 16.dp)
+                .padding(horizontal = 24.dp, vertical = 18.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            /* top‑row */
             Row(
-                Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment     = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_arrow_back),
-                    contentDescription = null,
-                    tint = textClr,
-                    modifier = Modifier.size(28.dp).clickable {
-                        context.startActivity(
-                            Intent(context, CourseSelectionActivity::class.java)
-                                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                        )
-                        (context as Activity).finish()
-                    }
-                )
-
-                IconToggleButton(dark, onToggle) {
+                Surface(
+                    shape = MaterialTheme.shapes.medium,
+                    color = KvSurface.copy(alpha = .78f),
+                    border = BorderStroke(1.dp, KvAccentSoft.copy(alpha = .22f))
+                ) {
                     Icon(
-                        if (dark) Icons.Default.DarkMode else Icons.Default.LightMode,
-                        null,
-                        tint = accent
+                        painter = painterResource(R.drawable.ic_arrow_back),
+                        contentDescription = "Back",
+                        tint = KvTextColor,
+                        modifier = Modifier
+                            .size(46.dp)
+                            .padding(10.dp)
+                            .clickable {
+                                context.startActivity(
+                                    Intent(context, CourseSelectionActivity::class.java)
+                                        .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                )
+                                (context as Activity).finish()
+                            }
                     )
                 }
 
-                Image(
-                    painter = painterResource(id = avatar),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable {
-                            context.startActivity(Intent(context, ProfileActivity::class.java))
-                        }
-                )
+                Surface(
+                    shape = MaterialTheme.shapes.medium,
+                    color = KvSurface.copy(alpha = .78f),
+                    border = BorderStroke(1.dp, KvAccentSoft.copy(alpha = .22f))
+                ) {
+                    IconToggleButton(dark, onToggle) {
+                        Icon(
+                            if (dark) Icons.Default.DarkMode else Icons.Default.LightMode,
+                            contentDescription = null,
+                            tint = KvCyan
+                        )
+                    }
+                }
+
+                Surface(
+                    shape = MaterialTheme.shapes.medium,
+                    color = KvSurface.copy(alpha = .78f),
+                    border = BorderStroke(1.dp, KvCyan.copy(alpha = .35f))
+                ) {
+                    Image(
+                        painter = painterResource(id = avatar),
+                        contentDescription = "Profile",
+                        modifier = Modifier
+                            .size(46.dp)
+                            .padding(5.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable {
+                                context.startActivity(Intent(context, ProfileActivity::class.java))
+                            }
+                    )
+                }
             }
 
-            /* заголовок */
-            Text(
-                "JAVASCRIPT",
-                fontSize   = 28.sp,
-                fontWeight = FontWeight.Bold,
-                fontFamily = Rubik,
-                color      = accent
-            )
-
-            Spacer(Modifier.height(24.dp))
-
-            /* модулі (фон = чистий KvAccent) */
-            topics.forEach { (title, descr) ->
-                var expand by remember { mutableStateOf(false) }
-                Column(
-                    Modifier.fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                        .background(accent, RoundedCornerShape(8.dp))
-                        .clickable { expand = !expand }
-                        .padding(16.dp)
+            KvGlassCard(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(22.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Text(title, color = Color.White, fontSize = 16.sp, fontFamily = Rubik)
-                    AnimatedVisibility(expand) {
-                        Text(
-                            descr,
-                            color = Color.White.copy(alpha = .9f),
-                            fontSize = 14.sp,
-                            fontFamily = Rubik,
-                            modifier = Modifier.padding(top = 6.dp)
+                    Surface(
+                        shape = MaterialTheme.shapes.large,
+                        color = KvGold.copy(alpha = .18f)
+                    ) {
+                        Icon(
+                            Icons.Default.DataObject,
+                            contentDescription = null,
+                            tint = KvGold,
+                            modifier = Modifier
+                                .size(62.dp)
+                                .padding(14.dp)
                         )
+                    }
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(
+                            text = "JavaScript",
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = Rubik,
+                            color = KvTextColor
+                        )
+                        Text(
+                            text = "6 topics, DOM practice, and web logic",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = KvMutedText,
+                            fontFamily = Rubik
+                        )
+                    }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    KvMetricChip(Icons.Default.School, "6", "topics", modifier = Modifier.weight(1f), accent = KvGold)
+                    KvMetricChip(Icons.Default.DoneAll, "2", "formats", modifier = Modifier.weight(1f), accent = KvCyan)
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            topics.forEachIndexed { index, (title, descr) ->
+                var expand by remember { mutableStateOf(false) }
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                        .clickable { expand = !expand },
+                    shape = RoundedCornerShape(8.dp),
+                    color = KvSurface.copy(alpha = .86f),
+                    border = BorderStroke(1.dp, KvGold.copy(alpha = .2f))
+                ) {
+                    Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Text(
+                                text = "${index + 1}".padStart(2, '0'),
+                                color = KvGold,
+                                style = MaterialTheme.typography.labelLarge,
+                                fontFamily = Rubik
+                            )
+                            Text(
+                                title,
+                                color = KvTextColor,
+                                style = MaterialTheme.typography.titleSmall,
+                                fontFamily = Rubik,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                        AnimatedVisibility(expand) {
+                            Text(
+                                descr,
+                                color = KvMutedText,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontFamily = Rubik,
+                                textAlign = TextAlign.Start,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
                     }
                 }
             }
 
-            Spacer(Modifier.weight(1f))
+            Spacer(Modifier.height(24.dp))
 
-            /* нижні кнопки: квадратні, без анімації */
             Row(
                 Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                BasicPurpleButton(
-                    text = "Почати курс з початку",
+                KvantorOutlinedButton(
+                    text = "Start from beginning",
+                    onClick = onStartFromBeginning,
+                    leadingIcon = Icons.Default.RestartAlt,
                     modifier = Modifier.weight(1f)
-                ) { onStartFromBeginning() }
+                )
 
-                BasicPurpleButton(
-                    text = "Продовжити курс",
+                KvantorButton(
+                    text = "Continue",
+                    onClick = onContinueCourse,
+                    leadingIcon = Icons.Default.PlayArrow,
                     modifier = Modifier.weight(1f)
-                ) { onContinueCourse() }
+                )
             }
+            Spacer(Modifier.height(16.dp))
         }
-    }
-}
-
-/* ---------------- квадратна кнопка на KvAccent ---------------- */
-@Composable
-private fun BasicPurpleButton(
-    text: String,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    Button(
-        onClick = onClick,
-          // прибираємо фіксовану висоту
-               modifier = modifier,                // без height → стандартна висота
-        shape    = RoundedCornerShape(8.dp),
-        colors   = ButtonDefaults.buttonColors(
-            containerColor = KvAccent,
-            contentColor   = Color.White
-        )
-    ) {
-        Text(
-            text,
-            fontFamily = Rubik,
-                       modifier = Modifier.fillMaxWidth(),
-                       textAlign = TextAlign.Left
-        )
     }
 }
 
