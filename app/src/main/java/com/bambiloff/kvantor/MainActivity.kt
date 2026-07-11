@@ -50,10 +50,43 @@ class MainActivity : ComponentActivity() {
             KvantorTheme(darkTheme = isDarkTheme) {
                 PythonCourseScreen(
                     isDarkTheme   = isDarkTheme,
-                    onToggleTheme = { isDarkTheme = it }
+                    onToggleTheme = { isDarkTheme = it },
+                    onStartFromBeginning = { openPythonLesson(resetProgress = true) },
+                    onContinueCourse = { openPythonLesson(resetProgress = false) }
                 )
             }
         }
+    }
+
+    private fun openPythonLesson(resetProgress: Boolean) {
+        val intent = Intent(this, LessonActivity::class.java).putExtra("courseType", "python")
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+
+        if (!resetProgress || uid == null) {
+            startActivity(intent)
+            return
+        }
+
+        FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(uid)
+            .set(
+                mapOf(
+                    "progress" to mapOf(
+                        "python" to mapOf(
+                            "moduleIndex" to 0,
+                            "pageIndex" to 0,
+                            "completedModuleIds" to emptyList<String>(),
+                            "rewardedQuizPageIds" to emptyList<String>(),
+                            "courseCompleted" to false
+                        )
+                    )
+                ),
+                SetOptions.merge()
+            )
+            .addOnCompleteListener {
+                startActivity(intent)
+            }
     }
 }
 
@@ -73,7 +106,9 @@ fun PythonScreen() {
 @Composable
 fun PythonCourseScreen(
     isDarkTheme: Boolean,
-    onToggleTheme: (Boolean) -> Unit
+    onToggleTheme: (Boolean) -> Unit,
+    onStartFromBeginning: () -> Unit = {},
+    onContinueCourse: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val uid     = FirebaseAuth.getInstance().currentUser?.uid
@@ -216,19 +251,7 @@ fun PythonCourseScreen(
                 val scale by animateFloatAsState(if (pressed) 0.95f else 1f)
 
                 Button(
-                    onClick = {
-                        uid?.let { user ->
-                            db.collection("users")
-                                .document(user)
-                                .set(
-                                    mapOf("progress" to mapOf("python" to mapOf("moduleIndex" to 0, "pageIndex" to 0))),
-                                    SetOptions.merge()
-                                )
-                        }
-                        context.startActivity(
-                            Intent(context, LessonActivity::class.java).putExtra("courseType", "python")
-                        )
-                    },
+                    onClick = onStartFromBeginning,
                     modifier          = Modifier
                         .weight(1f)
                         .graphicsLayer { scaleX = scale; scaleY = scale },
@@ -247,11 +270,7 @@ fun PythonCourseScreen(
                 val scale2 by animateFloatAsState(if (pressed2) 0.95f else 1f)
 
                 Button(
-                    onClick = {
-                        context.startActivity(
-                            Intent(context, LessonActivity::class.java).putExtra("courseType", "python")
-                        )
-                    },
+                    onClick = onContinueCourse,
                     modifier          = Modifier
                         .weight(1f)
                         .graphicsLayer { scaleX = scale2; scaleY = scale2 },

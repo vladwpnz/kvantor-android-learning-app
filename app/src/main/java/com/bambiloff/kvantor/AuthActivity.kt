@@ -2,6 +2,7 @@ package com.bambiloff.kvantor
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -61,7 +62,11 @@ class AuthActivity : ComponentActivity() {
 
         usersRef.get()
             .addOnSuccessListener { doc ->
-                if (!doc.exists()) {
+                val hasProfile = doc.exists() &&
+                    !doc.getString("nickname").isNullOrBlank() &&
+                    !doc.getString("avatarName").isNullOrBlank()
+
+                if (!hasProfile) {
                     // Якщо профілю не було — нехай все одно налаштує профіль
                     startActivity(Intent(this, ProfileSetupActivity::class.java))
                 } else {
@@ -71,9 +76,11 @@ class AuthActivity : ComponentActivity() {
                 finish()
             }
             .addOnFailureListener {
-                // Якщо щось пішло не так — теж до вибору
-                startActivity(Intent(this, CourseSelectionActivity::class.java))
-                finish()
+                Toast.makeText(
+                    this,
+                    "Не вдалося перевірити профіль",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
     }
 

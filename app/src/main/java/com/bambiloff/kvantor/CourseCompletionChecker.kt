@@ -7,29 +7,44 @@ import kotlinx.coroutines.tasks.await
 object CourseCompletionChecker {
 
     /**
-     * Перевіряє завершення будь-якого курсу (python/js) за назвою колекції,
-     * порівнює з тим, скільки модулів вже є в списку completedModules у документі користувача.
+     * Перевіряє завершення курсу за реальними id модулів і підтримує старе поле completedModules.
      */
-    suspend fun checkCourseCompleted(uid: String, courseType: String) {
+    suspend fun checkCourseCompleted(uid: String, courseType: String): Boolean {
         val db = FirebaseFirestore.getInstance()
 
         // обираємо вашу колекцію з модулями
         val modulesCol = if (courseType == "javascript") "modules_js" else "modules"
 
-        // загальна кількість модулів у курсі
-        val totalModules = db.collection(modulesCol)
-            .get().await().size()
+        val moduleIds = db.collection(modulesCol)
+            .get()
+            .await()
+            .documents
+            .mapNotNull { doc ->
+                val dtoId = doc.toObject(ModuleDto::class.java)?.id.orEmpty()
+                dtoId.ifBlank { doc.id }.takeIf { it.isNotBlank() }
+            }
 
-        // читаємо поле completedModules із документа users/{uid}
         val userDoc = db.collection("users").document(uid).get().await()
-        val doneAny = userDoc.get("completedModules")
-        val doneList = (doneAny as? List<*>)?.filterIsInstance<String>() ?: emptyList()
+        val progress = userDoc.get("progress") as? Map<*, *>
+        val courseProgress = progress?.get(courseType) as? Map<*, *>
+        val courseCompletedIds =
+            (courseProgress?.get("completedModuleIds") as? List<*>)?.filterIsInstance<String>()
+                ?: emptyList()
+        val legacyCompletedIds =
+            (userDoc.get("completedModules") as? List<*>)?.filterIsInstance<String>()
+                ?: emptyList()
+        val completedIds = CourseProgressRules.mergeCompatibleCompletedIds(
+            courseCompletedIds = courseCompletedIds,
+            legacyCompletedIds = legacyCompletedIds,
+            actualModuleIds = moduleIds
+        )
 
-        // якщо всі модулі позначені — розблокуємо ачивку
-        if (totalModules > 0 && doneList.size == totalModules) {
+        val completed = CourseProgressRules.isCourseCompleted(moduleIds, completedIds)
+        if (completed) {
             val achId = if (courseType == "python") "PY_MASTER" else "JS_SAMURAI"
             AchievementManager.unlockAchievement(uid, achId)
             println("🏆 [$courseType] achievement unlocked via CourseCompletionChecker")
         }
+        return completed
     }
 }

@@ -37,6 +37,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -56,7 +57,6 @@ dependencies {
     // Firebase Auth + Firestore
     implementation("com.google.firebase:firebase-auth-ktx:22.3.0")
     implementation("com.google.firebase:firebase-firestore-ktx:24.10.3")
-    implementation("com.google.firebase:firebase-firestore:24.10.3")
     implementation("com.google.android.gms:play-services-auth:21.0.0")
 
     // ViewModel + Lifecycle
@@ -66,12 +66,13 @@ dependencies {
 
     // Kotlin Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
 
     // Тестування
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.6.1")
 
     // Debug
     debugImplementation("androidx.compose.ui:ui-tooling")
@@ -83,16 +84,9 @@ dependencies {
     implementation ("com.squareup.retrofit2:retrofit:2.9.0")
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation ("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11")
-    implementation ("com.google.firebase:firebase-firestore-ktx:24.7.1")
 
 
-    implementation ("androidx.compose.material:material-icons-extended:1.4.3")
     /* ──────── ✦ ДОПОВНЕННЯ ДЛЯ UI-ТЕСТІВ Compose ✦ ──────── */
-
-    // той самий BOM, але підхоплюємо його також у тестових конфігураціях,
-    // інакше Gradle попросить явну версію для ui-test-junit4
-    androidTestImplementation(platform("androidx.compose:compose-bom:2024.02.01"))
-    debugImplementation      (platform("androidx.compose:compose-bom:2024.02.01"))
 
     // базові правила (Rule) AndroidX Test — знадобляться, якщо
     // у тестах будете використовувати createAndroidComposeRule<…>()

@@ -40,8 +40,20 @@ class ShopActivity : ComponentActivity() {
             val snack  = remember { SnackbarHostState() }
             LaunchedEffect(Unit) {
                 vm.events.collect { e ->
-                    if (e is LessonViewModel.UiEvent.NoCoins)
-                        snack.showSnackbar("Недостатньо монет")
+                    when (e) {
+                        LessonViewModel.UiEvent.NoCoins ->
+                            snack.showSnackbar("Недостатньо монет")
+                        is LessonViewModel.UiEvent.PurchaseFinished -> {
+                            val message = when (e.result) {
+                                PurchaseResult.SUCCESS -> "Покупку виконано"
+                                PurchaseResult.INSUFFICIENT_COINS -> "Недостатньо монет"
+                                PurchaseResult.FULL_LIVES -> "Життя вже повні"
+                                PurchaseResult.FAILURE -> "Не вдалося виконати покупку"
+                            }
+                            snack.showSnackbar(message)
+                        }
+                        else -> Unit
+                    }
                 }
             }
 
@@ -88,15 +100,15 @@ class ShopActivity : ComponentActivity() {
                     /* -------- товари -------- */
                     ShopItem(
                         icon    = Icons.Default.Favorite,
-                        label   = "Купити 1 ❤️  (30₵)",
-                        enabled = coins >= 30,
+                        label   = "Купити 1 ❤️  (${GameConfig.LIFE_COST}₵)",
+                        enabled = coins >= GameConfig.LIFE_COST && lives < GameConfig.MAX_LIVES,
                         onClick = vm::buyLife
                     )
 
                     ShopItem(
                         icon    = Icons.Default.Lightbulb,
-                        label   = "Купити 1 💡 (20₵)",
-                        enabled = coins >= 20,
+                        label   = "Купити 1 💡 (${GameConfig.HINT_COST}₵)",
+                        enabled = coins >= GameConfig.HINT_COST,
                         onClick = vm::buyHint
                     )
                 }

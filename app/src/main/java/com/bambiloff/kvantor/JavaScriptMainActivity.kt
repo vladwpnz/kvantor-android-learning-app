@@ -33,6 +33,7 @@ import com.bambiloff.kvantor.ui.theme.KvantorTheme
 import com.bambiloff.kvantor.ui.theme.Rubik
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import androidx.compose.ui.text.style.TextAlign
 import androidx. compose. ui. platform. testTag
 
@@ -57,8 +58,46 @@ class JavaScriptMainActivity : ComponentActivity() {
 
         setContent {
             var dark by remember { mutableStateOf(true) }
-            KvantorTheme(darkTheme = dark) { JavaScriptMenu(dark, onToggle = { dark = it }) }
+            KvantorTheme(darkTheme = dark) {
+                JavaScriptMenu(
+                    dark,
+                    onToggle = { dark = it },
+                    onStartFromBeginning = { openJavaScriptLesson(resetProgress = true) },
+                    onContinueCourse = { openJavaScriptLesson(resetProgress = false) }
+                )
+            }
         }
+    }
+
+    private fun openJavaScriptLesson(resetProgress: Boolean) {
+        val intent = Intent(this, LessonActivity::class.java).putExtra("courseType", "javascript")
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+
+        if (!resetProgress || uid == null) {
+            startActivity(intent)
+            return
+        }
+
+        FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(uid)
+            .set(
+                mapOf(
+                    "progress" to mapOf(
+                        "javascript" to mapOf(
+                            "moduleIndex" to 0,
+                            "pageIndex" to 0,
+                            "completedModuleIds" to emptyList<String>(),
+                            "rewardedQuizPageIds" to emptyList<String>(),
+                            "courseCompleted" to false
+                        )
+                    )
+                ),
+                SetOptions.merge()
+            )
+            .addOnCompleteListener {
+                startActivity(intent)
+            }
     }
 }
 @Composable
@@ -71,7 +110,12 @@ fun JavaScriptScreen() {
 
 /* ------------------------- сам екран ------------------------- */
 @Composable
-private fun JavaScriptMenu(dark: Boolean, onToggle: (Boolean) -> Unit) {
+private fun JavaScriptMenu(
+    dark: Boolean,
+    onToggle: (Boolean) -> Unit,
+    onStartFromBeginning: () -> Unit,
+    onContinueCourse: () -> Unit
+) {
 
     /* базові кольори (повністю як у Python‑екрані) */
     val bg      = if (dark) KvBg else Color(0xFFF5F5F5)
@@ -201,29 +245,12 @@ private fun JavaScriptMenu(dark: Boolean, onToggle: (Boolean) -> Unit) {
                 BasicPurpleButton(
                     text = "Почати курс з початку",
                     modifier = Modifier.weight(1f)
-                ) {
-                    uid?.let { user ->
-                        db.collection("users").document(user)
-                            .update(
-                                "progress.javascript",
-                                mapOf("moduleIndex" to 0, "pageIndex" to 0)
-                            )
-                    }
-                    context.startActivity(
-                        Intent(context, LessonActivity::class.java)
-                            .putExtra("courseType", "javascript")
-                    )
-                }
+                ) { onStartFromBeginning() }
 
                 BasicPurpleButton(
                     text = "Продовжити курс",
                     modifier = Modifier.weight(1f)
-                ) {
-                    context.startActivity(
-                        Intent(context, LessonActivity::class.java)
-                            .putExtra("courseType", "javascript")
-                    )
-                }
+                ) { onContinueCourse() }
             }
         }
     }
