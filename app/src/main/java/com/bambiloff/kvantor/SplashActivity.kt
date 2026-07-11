@@ -2,16 +2,15 @@ package com.bambiloff.kvantor
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,6 +19,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bambiloff.kvantor.ui.theme.Rubik // ← додаємо імпорт шрифту
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class SplashActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,18 +29,59 @@ class SplashActivity : ComponentActivity() {
         Log.d("SPLASH", "SplashActivity запустилась")
 
         setContent {
-            SplashScreenContent()
+            var startupError by remember { mutableStateOf(false) }
+
+            LaunchedEffect(Unit) {
+                routeFromSplash(onProfileCheckFailed = { startupError = true })
+            }
+
+            SplashScreenContent(
+                showError = startupError,
+                onRetry = {
+                    startupError = false
+                    routeFromSplash(onProfileCheckFailed = { startupError = true })
+                }
+            )
+        }
+    }
+
+    private fun routeFromSplash(onProfileCheckFailed: () -> Unit) {
+        val user = FirebaseAuth.getInstance().currentUser
+        if (user == null) {
+            navigateTo(AuthActivity::class.java)
+            return
         }
 
-        Handler(Looper.getMainLooper()).postDelayed({
-            startActivity(Intent(this, AuthActivity::class.java))
-            finish()
-        }, 5000)
+        FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(user.uid)
+            .get()
+            .addOnSuccessListener { doc ->
+                val hasProfile = doc.exists() &&
+                    !doc.getString("nickname").isNullOrBlank() &&
+                    !doc.getString("avatarName").isNullOrBlank()
+
+                navigateTo(
+                    if (hasProfile) CourseSelectionActivity::class.java
+                    else ProfileSetupActivity::class.java
+                )
+            }
+            .addOnFailureListener {
+                onProfileCheckFailed()
+            }
+    }
+
+    private fun navigateTo(target: Class<*>) {
+        startActivity(Intent(this, target))
+        finish()
     }
 }
 
 @Composable
-fun SplashScreenContent() {
+fun SplashScreenContent(
+    showError: Boolean = false,
+    onRetry: () -> Unit = {}
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -62,5 +104,25 @@ fun SplashScreenContent() {
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 36.dp)
         )
+
+        if (showError) {
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 72.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Не вдалося перевірити профіль",
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    fontFamily = Rubik
+                )
+                Spacer(Modifier.height(8.dp))
+                Button(onClick = onRetry) {
+                    Text("Повторити")
+                }
+            }
+        }
     }
 }

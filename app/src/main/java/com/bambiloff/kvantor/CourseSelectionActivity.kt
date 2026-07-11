@@ -30,7 +30,6 @@ import androidx.compose.ui.unit.dp
 import com.bambiloff.kvantor.ui.theme.KvantorTheme
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com. google. firebase. firestore. BuildConfig
 /**  MAIN ACTIVITY — вибір курсу  */
 class CourseSelectionActivity : ComponentActivity() {
 

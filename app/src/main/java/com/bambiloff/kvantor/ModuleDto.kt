@@ -5,9 +5,9 @@ data class ModuleDto(
     var title: String = "",
     var pages: List<PageDto> = emptyList()
 ) {
-    fun toModule(): Module {
+    fun toModule(documentId: String = ""): Module {
         return Module(
-            id = id,
+            id = id.ifBlank { documentId },
             title = title,
             pages = pages.mapNotNull { it.toPageOrNull() }
         )

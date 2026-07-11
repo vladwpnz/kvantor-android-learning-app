@@ -14,6 +14,14 @@ object UserBootstrapper {
     private const val START_HINTS  = 3
     private const val START_COINS  = 0
 
+    private fun defaultCourseProgress() = mapOf(
+        "moduleIndex" to 0,
+        "pageIndex" to 0,
+        "completedModuleIds" to emptyList<String>(),
+        "rewardedQuizPageIds" to emptyList<String>(),
+        "courseCompleted" to false
+    )
+
     /** Швидке посилання на Firestore */
     private val db: FirebaseFirestore
         get() = FirebaseFirestore.getInstance()
@@ -42,7 +50,11 @@ object UserBootstrapper {
                     "lives"       to START_LIVES,
                     "hints"       to START_HINTS,
                     "coins"       to START_COINS,
-                    "lastLifeTS"  to null          // поки не витрачене життя
+                    "lastLifeTS"  to null,          // поки не витрачене життя
+                    "progress"    to mapOf(
+                        "python" to defaultCourseProgress(),
+                        "javascript" to defaultCourseProgress()
+                    )
                 ),
                 SetOptions.merge()
             )
@@ -75,6 +87,32 @@ object UserBootstrapper {
 
             if (!snap.contains("lastLifeTS"))
                 tx.update(ref, "lastLifeTS", null)
+
+            val progress = snap.get("progress") as? Map<*, *>
+            val pythonProgress = progress?.get("python") as? Map<*, *>
+            val javascriptProgress = progress?.get("javascript") as? Map<*, *>
+
+            if (pythonProgress == null)
+                tx.update(ref, "progress.python", defaultCourseProgress())
+            else {
+                if (!pythonProgress.containsKey("completedModuleIds"))
+                    tx.update(ref, "progress.python.completedModuleIds", emptyList<String>())
+                if (!pythonProgress.containsKey("rewardedQuizPageIds"))
+                    tx.update(ref, "progress.python.rewardedQuizPageIds", emptyList<String>())
+                if (!pythonProgress.containsKey("courseCompleted"))
+                    tx.update(ref, "progress.python.courseCompleted", false)
+            }
+
+            if (javascriptProgress == null)
+                tx.update(ref, "progress.javascript", defaultCourseProgress())
+            else {
+                if (!javascriptProgress.containsKey("completedModuleIds"))
+                    tx.update(ref, "progress.javascript.completedModuleIds", emptyList<String>())
+                if (!javascriptProgress.containsKey("rewardedQuizPageIds"))
+                    tx.update(ref, "progress.javascript.rewardedQuizPageIds", emptyList<String>())
+                if (!javascriptProgress.containsKey("courseCompleted"))
+                    tx.update(ref, "progress.javascript.courseCompleted", false)
+            }
         }.await()
     }
 }

@@ -31,6 +31,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bambiloff.kvantor.ui.*
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 /* ───────────── Activity ───────────── */
 class LessonActivity : ComponentActivity() {
@@ -72,6 +73,7 @@ fun LessonScreen(
     val modules        by viewModel.modules.collectAsState()
     val currentModIdx  by viewModel.currentModuleIndex.collectAsState()
     val currentPageIdx by viewModel.currentPageIndex.collectAsState()
+    val courseCompleted by viewModel.courseCompleted.collectAsState()
 
     val lives          by viewModel.lives.collectAsState()
     val hints          by viewModel.hints.collectAsState()
@@ -79,11 +81,13 @@ fun LessonScreen(
     val showHint       by viewModel.showHint.collectAsState()
     val timeLeft   by viewModel.timeToNextLife.collectAsState()
 
-    val livesLabel = if (timeLeft > 0 && lives < 10)
+    val livesLabel = if (timeLeft > 0 && lives < GameConfig.MAX_LIVES)
         "$lives (${String.format("%02d:%02d", timeLeft/60, timeLeft%60)})"
     else "$lives"
 
     val snack = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    var savingProgress by remember { mutableStateOf(false) }
 
 
     /* ловимо повідомлення-події від VM */
@@ -96,6 +100,19 @@ fun LessonScreen(
                     snack.showSnackbar("Підказок більше нема")
                 LessonViewModel.UiEvent.NoCoins ->      // ← нова гілка
                     snack.showSnackbar("Недостатньо монет для покупки")
+                LessonViewModel.UiEvent.SaveFailed ->
+                    snack.showSnackbar("Не вдалося зберегти прогрес")
+                LessonViewModel.UiEvent.AchievementUnlockFailed ->
+                    snack.showSnackbar("Прогрес збережено, але досягнення не відкрито")
+                is LessonViewModel.UiEvent.PurchaseFinished -> {
+                    val message = when (it.result) {
+                        PurchaseResult.SUCCESS -> "Покупку виконано"
+                        PurchaseResult.INSUFFICIENT_COINS -> "Недостатньо монет для покупки"
+                        PurchaseResult.FULL_LIVES -> "Життя вже повні"
+                        PurchaseResult.FAILURE -> "Не вдалося виконати покупку"
+                    }
+                    snack.showSnackbar(message)
+                }
             }
         }
     }
@@ -113,9 +130,14 @@ fun LessonScreen(
                 title = { Text("Kvantor", color = KvTextColor) },
                 actions = {
                     TextButton(
+                        enabled = !savingProgress,
                         onClick = {
-                            viewModel.saveProgress()   // ← додано
-                            onBackToMenu()
+                            scope.launch {
+                                savingProgress = true
+                                val saved = viewModel.saveProgressNow()
+                                savingProgress = false
+                                if (saved) onBackToMenu()
+                            }
                         }
                     ) {
                         Text("Меню", color = KvTextColor)
@@ -161,6 +183,8 @@ fun LessonScreen(
                     contentAlignment = Alignment.Center
                 ) { CircularProgressIndicator(color = KvAccent) }
 
+                courseCompleted -> CourseFinishedScreen(onBackToMenu)
+
                 currentModIdx < modules.size -> LessonModuleContent(
                     module       = modules[currentModIdx],
                     pageIndex    = currentPageIdx,
@@ -199,7 +223,7 @@ fun LessonModuleContent(
     onBackToMenu: () -> Unit
 ) {
     val page = module.pages.getOrNull(pageIndex)
-    var done by remember(pageIndex) { mutableStateOf(false) }
+    var done by remember(module.id, pageIndex, page) { mutableStateOf(page is Page.Theory) }
 
     Column(
         modifier = Modifier
@@ -229,23 +253,20 @@ fun LessonModuleContent(
         /* ——— контент сторінки ——— */
         when (page) {
             is Page.Theory     -> Text(page.text, color = KvTextColor, textAlign = TextAlign.Center)
-                .also { done = true }
 
-            is Page.Test       -> TestPage(page, vm) { done = true }
-            is Page.CodingTask -> CodingTaskView(page) { done = true }
+            is Page.Test       -> TestPage(
+                page,
+                vm,
+                CourseProgressRules.rewardPageId(courseType, module.id, pageIndex)
+            ) { done = it }
+            is Page.CodingTask -> CodingTaskView(page) { done = it }
 
             is Page.Final      -> {
-                LaunchedEffect(uid, courseType) {
-                    val achId = if (courseType == "python") "PY_MASTER" else "JS_SAMURAI"
-                    AchievementManager.unlockAchievement(uid, achId)
-                }
-
                 Text(page.message, color = KvTextColor, textAlign = TextAlign.Center)
-                done = true
                 Spacer(Modifier.height(32.dp))
                 KvantorButton(
                     text    = if (isLastModule) "Повернутися в меню" else "До наступного модуля",
-                    onClick = if (isLastModule) onBackToMenu else onNext
+                    onClick = onNext
                 )
             }
 
@@ -283,10 +304,13 @@ fun CourseFinishedScreen(onBackToMenu: () -> Unit) {
 fun TestPage(
     test: Page.Test,
     vm: LessonViewModel,
-    onDone: () -> Unit
+    pageId: String,
+    onDone: (Boolean) -> Unit
 ) {
-    var selected by remember(test) { mutableStateOf(-1) }
-    var checked  by remember(test) { mutableStateOf(false) }
+    var selected by remember(pageId) { mutableStateOf(-1) }
+    var checked  by remember(pageId) { mutableStateOf(false) }
+    var answeredCorrect by remember(pageId) { mutableStateOf(false) }
+    var lastQuizResult by remember(pageId) { mutableStateOf<QuizAttemptResult?>(null) }
 
     Text(test.question, color = KvTextColor, textAlign = TextAlign.Center)
     Spacer(Modifier.height(24.dp))
@@ -295,7 +319,14 @@ fun TestPage(
         Row(verticalAlignment = Alignment.CenterVertically) {
             RadioButton(
                 selected = selected == idx,
-                onClick  = { selected = idx; checked = false },
+                onClick  = {
+                    if (!answeredCorrect) {
+                        selected = idx
+                        checked = false
+                        lastQuizResult = null
+                        onDone(false)
+                    }
+                },
                 colors   = RadioButtonDefaults.colors(
                     selectedColor   = KvTextColor,
                     unselectedColor = KvTextColor
@@ -320,21 +351,23 @@ fun TestPage(
     Spacer(Modifier.height(24.dp))
     KvantorButton(
         text    = "Перевірити",
-        enabled = selected != -1,
+        enabled = selected != -1 && !answeredCorrect,
         onClick = {
-            vm.checkAnswer(test, selected)
+            val result = vm.checkAnswer(test, selected, pageId)
             checked = true
-            onDone()
+            answeredCorrect = result.correct
+            lastQuizResult = result
+            onDone(result.canProceed)
         }
     )
 
     /* ---- Результат ---- */
-    val correct = remember(checked) { selected == test.correctAnswerIndex }
-    if (checked) {
+    val lastResult = lastQuizResult
+    if (checked && lastResult != null) {
         Spacer(Modifier.height(16.dp))
         Text(
-            if (correct) "✅ Правильно (+10₵)" else "❌ Неправильно (-1 ❤️)",
-            color     = if (correct) KvAccent else KvAccent.copy(.7f),
+            QuizProgressRules.resultMessage(lastResult),
+            color     = if (lastResult.correct) KvAccent else KvAccent.copy(.7f),
             textAlign = TextAlign.Center
         )
     }
