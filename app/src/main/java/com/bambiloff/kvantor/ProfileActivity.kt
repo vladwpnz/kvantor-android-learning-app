@@ -4,9 +4,9 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -20,12 +20,12 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bambiloff.kvantor.ui.theme.KvantorTheme
@@ -61,7 +61,7 @@ fun ProfileScreen() {
     val db      = FirebaseFirestore.getInstance()
 
     // стани UI
-    var nickname    by remember { mutableStateOf("Завантаження...") }
+    var nickname    by remember { mutableStateOf("Loading...") }
     var avatarResId by remember { mutableIntStateOf(R.drawable.default_avatar) }
     var achievements by remember { mutableStateOf<List<Achievement>>(emptyList()) }
 
@@ -79,7 +79,7 @@ fun ProfileScreen() {
             try {
                 // — Профіль
                 val userDoc = db.collection("users").document(id).get().await()
-                nickname = userDoc.getString("nickname") ?: "Без імені"
+                nickname = userDoc.getString("nickname") ?: "Unnamed"
                 avatarResId = getAvatarId(userDoc.getString("avatarName") ?: "")
 
                 // — Підколекція achievements
@@ -108,8 +108,8 @@ fun ProfileScreen() {
             TopAppBar(
                 title = {
                     Text(
-                        text = "Профіль",
-                        color = Color.White,
+                        text = "Profile",
+                        color = KvTextColor,
                         fontSize = 20.sp,
                         fontFamily = Rubik
                     )
@@ -118,101 +118,169 @@ fun ProfileScreen() {
                     IconButton(onClick = { (context as? ComponentActivity)?.finish() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Назад",
-                            tint = Color.White
+                            contentDescription = "Back",
+                            tint = KvCyan
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF390D58))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = KvBg)
             )
         },
-        containerColor = Color(0xFF390D58)
+        containerColor = KvBg
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFF390D58))
-                .padding(padding)
-                .padding(32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Аватар
-            Image(
-                painter = painterResource(id = avatarResId),
-                contentDescription = "Avatar",
+        KvGradientBackground(modifier = Modifier.padding(padding)) {
+            Column(
                 modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape)
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            // Нікнейм
-            Text(
-                text = nickname,
-                color = Color.White,
-                fontSize = 24.sp,
-                fontFamily = Rubik
-            )
-
-            Spacer(Modifier.height(8.dp))
-
-            Text(
-                text = "Ваш особистий профіль",
-                color = Color.LightGray,
-                fontSize = 14.sp,
-                fontFamily = Rubik
-            )
-
-            // Лічильник ачівок
-            Spacer(Modifier.height(24.dp))
-            Text(
-                text = "Ачівки: $unlockedCount / ${achievements.size}",
-                color = Color.White,
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            // Сітка із іконками ачівок
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
-                modifier = Modifier.fillMaxHeight(),
-                contentPadding = PaddingValues(8.dp)
+                    .fillMaxSize()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                items(achievements) { ach ->
-                    val icon = when (ach.id) {
-                        "WELCOME"    -> Icons.Filled.EmojiEvents
-                        "FIRST_STEPS_IN_PY"  -> Icons.Filled.Code
-                        "FIRST_STEPS_IN_JS" -> Icons.Filled.Code
-                        else         -> Icons.AutoMirrored.Filled.Help
-                    }
-                    val title = when (ach.id) {
-                        "WELCOME"    -> "Перший крок"
-                        "FIRST_STEPS_IN_PY"  -> "Перший крок у Python"
-                        "FIRST_STEPS_IN_JS" -> "Перший крок у JS"
-                        else         -> ach.id
+                KvGlassCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(22.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = KvSurfaceHi.copy(alpha = .9f),
+                            border = BorderStroke(1.dp, KvCyan.copy(alpha = .35f))
+                        ) {
+                            Image(
+                                painter = painterResource(id = avatarResId),
+                                contentDescription = "Avatar",
+                                modifier = Modifier
+                                    .size(92.dp)
+                                    .padding(6.dp)
+                                    .clip(CircleShape)
+                            )
+                        }
+
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                text = nickname,
+                                color = KvTextColor,
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontFamily = Rubik,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Text(
+                                text = "Your personal profile",
+                                color = KvMutedText,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontFamily = Rubik
+                            )
+
+                            Text(
+                                text = "Achievements: $unlockedCount / ${achievements.size}",
+                                color = KvCyan,
+                                style = MaterialTheme.typography.titleSmall
+                            )
+                        }
                     }
 
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .alpha(if (ach.unlocked) 1f else 0.3f)
+                    LinearProgressIndicator(
+                        progress = {
+                            if (achievements.isEmpty()) 0f else unlockedCount.toFloat() / achievements.size
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        color = KvCyan,
+                        trackColor = KvAccent.copy(alpha = .18f)
+                    )
+                }
+
+                Text(
+                    text = "Achievements",
+                    color = KvTextColor,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                if (achievements.isEmpty()) {
+                    KvStateCard(
+                        icon = Icons.Filled.EmojiEvents,
+                        title = "Achievements are waiting",
+                        body = "Complete lessons and quizzes to unlock rewards."
+                    )
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(3),
+                        modifier = Modifier.fillMaxHeight(),
+                        contentPadding = PaddingValues(bottom = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = title,
-                            modifier = Modifier.size(48.dp),
-                            tint = Color.White
-                        )
-                        Text(
-                            text = title,
-                            color = Color.White,
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
+                        items(achievements) { ach ->
+                            val icon = when (ach.id) {
+                                "WELCOME"    -> Icons.Filled.EmojiEvents
+                                "FIRST_STEPS_IN_PY"  -> Icons.Filled.Code
+                                "FIRST_STEPS_IN_JS" -> Icons.Filled.Code
+                                else         -> Icons.AutoMirrored.Filled.Help
+                            }
+                            val title = when (ach.id) {
+                                "WELCOME"    -> "First step"
+                                "FIRST_STEPS_IN_PY"  -> "First Python step"
+                                "FIRST_STEPS_IN_JS" -> "First JS step"
+                                else         -> ach.id
+                            }
+
+                            Surface(
+                                shape = MaterialTheme.shapes.medium,
+                                color = if (ach.unlocked) KvSurface.copy(alpha = .92f) else KvSurfaceHi.copy(alpha = .66f),
+                                border = BorderStroke(
+                                    1.dp,
+                                    if (ach.unlocked) KvGold.copy(alpha = .38f) else KvAccentSoft.copy(alpha = .28f)
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(136.dp)
+                            ) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.SpaceBetween,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(horizontal = 8.dp, vertical = 10.dp)
+                                ) {
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = icon,
+                                            contentDescription = title,
+                                            modifier = Modifier.size(36.dp),
+                                            tint = if (ach.unlocked) KvGold else KvMutedText.copy(alpha = .82f)
+                                        )
+                                        Text(
+                                            text = title,
+                                            color = if (ach.unlocked) KvTextColor else KvMutedText.copy(alpha = .9f),
+                                            textAlign = TextAlign.Center,
+                                            style = MaterialTheme.typography.labelMedium.copy(lineHeight = 15.sp),
+                                            fontWeight = FontWeight.SemiBold,
+                                            minLines = 2,
+                                            maxLines = 3,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+                                    Text(
+                                        text = if (ach.unlocked) "Unlocked" else "Locked",
+                                        color = if (ach.unlocked) KvCyan else KvAccentSoft.copy(alpha = .82f),
+                                        textAlign = TextAlign.Center,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }

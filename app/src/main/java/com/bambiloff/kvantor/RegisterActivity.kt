@@ -6,23 +6,26 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.LockReset
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.bambiloff.kvantor.ui.theme.KvantorTheme
 import com.bambiloff.kvantor.ui.theme.Rubik
 import com.google.firebase.auth.FirebaseAuth
@@ -41,14 +44,14 @@ class RegisterActivity : ComponentActivity() {
                     auth.createUserWithEmailAndPassword(email, password)
                         .addOnCompleteListener {
                             if (it.isSuccessful) {
-                                Toast.makeText(this, "Реєстрація успішна!", Toast.LENGTH_SHORT)
+                                Toast.makeText(this, "Account created successfully!", Toast.LENGTH_SHORT)
                                     .show()
                                 startActivity(Intent(this, ProfileSetupActivity::class.java))
                                 finish()
                             } else {
                                 Toast.makeText(
                                     this,
-                                    "Помилка: ${it.exception?.message}",
+                                    "Error: ${it.exception?.message}",
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }
@@ -68,104 +71,106 @@ fun RegisterScreen(onRegister: (String, String) -> Unit) {
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmVisible by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF390D58))
-            .padding(horizontal = 32.dp, vertical = 48.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "Реєстрація",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            fontFamily = Rubik,
-            color = Color(0xFF1DE0FF)
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email", color = Color.White, fontFamily = Rubik) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(0.85f),
-            textStyle = LocalTextStyle.current.copy(color = Color.White, fontFamily = Rubik)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Пароль", color = Color.White, fontFamily = Rubik) },
-            singleLine = true,
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = {
-                val icon = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                    Icon(imageVector = icon, contentDescription = null, tint = Color.White)
-                }
-            },
-            modifier = Modifier.fillMaxWidth(0.85f),
-            textStyle = LocalTextStyle.current.copy(color = Color.White, fontFamily = Rubik)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = confirmPassword,
-            onValueChange = { confirmPassword = it },
-            label = { Text("Повторіть пароль", color = Color.White, fontFamily = Rubik) },
-            singleLine = true,
-            visualTransformation = if (confirmVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = {
-                val icon = if (confirmVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                IconButton(onClick = { confirmVisible = !confirmVisible }) {
-                    Icon(imageVector = icon, contentDescription = null, tint = Color.White)
-                }
-            },
-            modifier = Modifier.fillMaxWidth(0.85f),
-            textStyle = LocalTextStyle.current.copy(color = Color.White, fontFamily = Rubik)
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Основна кнопка Реєстрації
-        Button(
-            onClick = {
-                if (email.isNotBlank() && password == confirmPassword) {
-                    onRegister(email, password)
-                } else {
-                    Toast.makeText(context, "Паролі не співпадають", Toast.LENGTH_SHORT).show()
-                }
-            },
+    KvGradientBackground(contentAlignment = Alignment.Center) {
+        Column(
             modifier = Modifier
-                .fillMaxWidth(0.85f)
-                .height(48.dp),
-            shape = RoundedCornerShape(8.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1DE0FF))
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
         ) {
-            Text("Зареєструватись", color = Color.Black, fontFamily = Rubik)
-        }
+            KvGlassCard(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(20.dp)
+            ) {
+                Text(
+                    text = "Create account",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = Rubik,
+                    color = KvCyan
+                )
 
-        Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Create your profile and keep your course progress",
+                    color = KvMutedText,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontFamily = Rubik
+                )
 
-        // Нова кнопка Повернутись назад
-        Button(
-            onClick = {
-                context.startActivity(Intent(context, AuthActivity::class.java))
-                if (context is Activity) context.finish()
-            },
-            modifier = Modifier
-                .fillMaxWidth(0.85f)
-                .height(48.dp),
-            shape = RoundedCornerShape(8.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1DE0FF))
-        ) {
-            Text("Назад", color = Color.Black, fontFamily = Rubik)
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email", fontFamily = Rubik) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    textStyle = LocalTextStyle.current.copy(color = KvTextColor, fontFamily = Rubik),
+                    leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = KvCyan) },
+                    colors = KvOutlinedTextFieldColors()
+                )
+
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Password", fontFamily = Rubik) },
+                    singleLine = true,
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = KvCyan) },
+                    trailingIcon = {
+                        val icon = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(imageVector = icon, contentDescription = null, tint = KvMutedText)
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    textStyle = LocalTextStyle.current.copy(color = KvTextColor, fontFamily = Rubik),
+                    colors = KvOutlinedTextFieldColors()
+                )
+
+                OutlinedTextField(
+                    value = confirmPassword,
+                    onValueChange = { confirmPassword = it },
+                    label = { Text("Confirm password", fontFamily = Rubik) },
+                    singleLine = true,
+                    visualTransformation = if (confirmVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    leadingIcon = { Icon(Icons.Default.LockReset, contentDescription = null, tint = KvCyan) },
+                    trailingIcon = {
+                        val icon = if (confirmVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                        IconButton(onClick = { confirmVisible = !confirmVisible }) {
+                            Icon(imageVector = icon, contentDescription = null, tint = KvMutedText)
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    textStyle = LocalTextStyle.current.copy(color = KvTextColor, fontFamily = Rubik),
+                    colors = KvOutlinedTextFieldColors()
+                )
+
+                KvantorButton(
+                    text = "Create account",
+                    onClick = {
+                        if (email.isNotBlank() && password == confirmPassword) {
+                            onRegister(email, password)
+                        } else {
+                            Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    leadingIcon = Icons.Default.PersonAdd,
+                    containerColor = KvCyan,
+                    contentColor = KvInk,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                KvantorOutlinedButton(
+                    text = "Back",
+                    onClick = {
+                        context.startActivity(Intent(context, AuthActivity::class.java))
+                        if (context is Activity) context.finish()
+                    },
+                    leadingIcon = Icons.AutoMirrored.Filled.ArrowBack,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
     }
 }

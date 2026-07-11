@@ -8,19 +8,22 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -31,6 +34,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bambiloff.kvantor.ui.theme.KvantorTheme
@@ -97,7 +101,7 @@ fun PythonScreen() {
             .fillMaxSize()
             .testTag("python_header")   // ← ЯКІР ДЛЯ ТЕСТУ
     ) {
-        Text("Python: перший урок")
+        Text("Python: first lesson")
     }
 }
 
@@ -113,8 +117,6 @@ fun PythonCourseScreen(
     val context = LocalContext.current
     val uid     = FirebaseAuth.getInstance().currentUser?.uid
     val db      = FirebaseFirestore.getInstance()
-    val cs      = MaterialTheme.colorScheme
-
     var avatarResId by remember { mutableStateOf(R.drawable.default_avatar) }
     LaunchedEffect(uid) {
         uid?.let { user ->
@@ -129,16 +131,14 @@ fun PythonCourseScreen(
         }
     }
 
-    Box(
-        Modifier
-            .fillMaxSize()
-            .background(cs.background)
-            .testTag("python_header")
+    KvGradientBackground(
+        modifier = Modifier.testTag("python_header"),
+        darkTheme = isDarkTheme
     ) {
         Column(
             Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp, vertical = 16.dp)
+                .padding(horizontal = 24.dp, vertical = 18.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -149,141 +149,202 @@ fun PythonCourseScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment     = Alignment.CenterVertically
             ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_arrow_back),
-                    contentDescription = "Назад",
-                    tint = cs.onBackground,
-                    modifier = Modifier
-                        .size(28.dp)
-                        .clickable {
-                            context.startActivity(
-                                Intent(context, CourseSelectionActivity::class.java)
-                                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                            )
-                            (context as Activity).finish()
-                        }
-                )
-
-                IconToggleButton(
-                    checked = isDarkTheme,
-                    onCheckedChange = onToggleTheme
+                Surface(
+                    shape = MaterialTheme.shapes.medium,
+                    color = KvSurface.copy(alpha = .78f),
+                    border = BorderStroke(1.dp, KvAccentSoft.copy(alpha = .22f))
                 ) {
                     Icon(
-                        imageVector = if (isDarkTheme) Icons.Default.DarkMode else Icons.Default.LightMode,
-                        contentDescription = null,
-                        tint = cs.primary
+                        painter = painterResource(R.drawable.ic_arrow_back),
+                        contentDescription = "Back",
+                        tint = KvTextColor,
+                        modifier = Modifier
+                            .size(46.dp)
+                            .padding(10.dp)
+                            .clickable {
+                                context.startActivity(
+                                    Intent(context, CourseSelectionActivity::class.java)
+                                        .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                )
+                                (context as Activity).finish()
+                            }
                     )
                 }
 
-                Image(
-                    painter = painterResource(id = avatarResId),
-                    contentDescription = "Профіль",
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable {
-                            context.startActivity(
-                                Intent(context, ProfileActivity::class.java)
-                            )
-                        }
-                )
+                Surface(
+                    shape = MaterialTheme.shapes.medium,
+                    color = KvSurface.copy(alpha = .78f),
+                    border = BorderStroke(1.dp, KvAccentSoft.copy(alpha = .22f))
+                ) {
+                    IconToggleButton(
+                        checked = isDarkTheme,
+                        onCheckedChange = onToggleTheme
+                    ) {
+                        Icon(
+                            imageVector = if (isDarkTheme) Icons.Default.DarkMode else Icons.Default.LightMode,
+                            contentDescription = null,
+                            tint = KvCyan
+                        )
+                    }
+                }
+
+                Surface(
+                    shape = MaterialTheme.shapes.medium,
+                    color = KvSurface.copy(alpha = .78f),
+                    border = BorderStroke(1.dp, KvCyan.copy(alpha = .35f))
+                ) {
+                    Image(
+                        painter = painterResource(id = avatarResId),
+                        contentDescription = "Profile",
+                        modifier = Modifier
+                            .size(46.dp)
+                            .padding(5.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable {
+                                context.startActivity(
+                                    Intent(context, ProfileActivity::class.java)
+                                )
+                            }
+                    )
+                }
             }
 
-            Text(
-                text       = "PYTHON",
-                fontSize   = 28.sp,
-                fontWeight = FontWeight.Bold,
-                fontFamily = Rubik,
-                color      = cs.primary
-            )
+            KvGlassCard(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(22.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Surface(
+                        shape = MaterialTheme.shapes.large,
+                        color = KvCyan.copy(alpha = .16f)
+                    ) {
+                        Icon(
+                            Icons.Default.Code,
+                            contentDescription = null,
+                            tint = KvCyan,
+                            modifier = Modifier
+                                .size(62.dp)
+                                .padding(14.dp)
+                        )
+                    }
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(
+                            text = "PYTHON",
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = Rubik,
+                            color = KvTextColor
+                        )
+                        Text(
+                            text = "6 topics, practice, quizzes, and AI code review",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = KvMutedText,
+                            fontFamily = Rubik
+                        )
+                    }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    KvMetricChip(Icons.Default.School, "6", "topics", modifier = Modifier.weight(1f), accent = KvCyan)
+                    KvMetricChip(Icons.Default.DoneAll, "2", "formats", modifier = Modifier.weight(1f), accent = KvAccentSoft)
+                }
+            }
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(16.dp))
 
             // Список тем з фоном 0xFF8C52FF
             val topics = listOf(
-                "Вступ" to "Ознайомлення з Python. Напишемо першу програму.",
-                "Змінні" to "Що таке змінні, типи даних, як оголошувати.",
-                "Цикли" to "Цикли for та while, приклади з практики.",
-                "Умови" to "if, else, elif — логіка умов.",
-                "Функції" to "Як створювати функції, передавати параметри.",
-                "Списки та словники" to "Основи списків та словників у Python."
+                "Introduction" to "Meet Python and write your first program.",
+                "Variables" to "What variables are, data types, and declarations.",
+                "Loops" to "Practice with for and while loops.",
+                "Conditions" to "if, else, and elif for decision-making.",
+                "Functions" to "Create functions and pass parameters.",
+                "Lists and dictionaries" to "Python collection basics for real tasks."
             )
 
-            topics.forEach { (title, description) ->
+            topics.forEachIndexed { index, (title, description) ->
                 var expanded by remember { mutableStateOf(false) }
-                Column(
-                    Modifier
+                Surface(
+                    modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp)
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(cs.primary)               // тепер #8C52FF
-                        .clickable { expanded = !expanded }
-                        .padding(horizontal = 16.dp, vertical = 10.dp)
+                        .clickable { expanded = !expanded },
+                    shape = RoundedCornerShape(8.dp),
+                    color = KvSurface.copy(alpha = .86f),
+                    border = BorderStroke(1.dp, KvCyan.copy(alpha = .18f))
                 ) {
-                    Text(
-                        text       = title,
-                        fontSize   = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        fontFamily = Rubik,
-                        color      = cs.onPrimary             // білий текст
-                    )
-                    AnimatedVisibility(expanded) {
-                        Text(
-                            text       = description,
-                            fontSize   = 14.sp,
-                            fontFamily = Rubik,
-                            color      = cs.onPrimary.copy(alpha = .9f),
-                            modifier   = Modifier.padding(top = 6.dp)
-                        )
+                    Column(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Text(
+                                text = "${index + 1}".padStart(2, '0'),
+                                color = KvCyan,
+                                style = MaterialTheme.typography.labelLarge,
+                                fontFamily = Rubik
+                            )
+                            Text(
+                                text       = title,
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Medium,
+                                fontFamily = Rubik,
+                                color      = KvTextColor,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                        AnimatedVisibility(expanded) {
+                            Text(
+                                text       = description,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontFamily = Rubik,
+                                color      = KvMutedText,
+                                modifier   = Modifier.padding(top = 8.dp),
+                                textAlign = TextAlign.Start
+                            )
+                        }
                     }
                 }
             }
 
-            Spacer(Modifier.height(32.dp))
-            Spacer(Modifier.weight(1f))
+            Spacer(Modifier.height(24.dp))
 
             Row(
                 Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 val interaction = remember { MutableInteractionSource() }
                 val pressed by interaction.collectIsPressedAsState()
                 val scale by animateFloatAsState(if (pressed) 0.95f else 1f)
 
-                Button(
+                KvantorOutlinedButton(
+                    text = "Start from beginning",
                     onClick = onStartFromBeginning,
-                    modifier          = Modifier
+                    leadingIcon = Icons.Default.RestartAlt,
+                    modifier = Modifier
                         .weight(1f)
-                        .graphicsLayer { scaleX = scale; scaleY = scale },
-                    interactionSource = interaction,
-                    shape             = RoundedCornerShape(8.dp),
-                    colors            = ButtonDefaults.buttonColors(
-                        containerColor = cs.primary,
-                        contentColor   = cs.onPrimary
-                    )
-                ) {
-                    Text("Почати курс з початку", fontFamily = Rubik)
-                }
+                        .graphicsLayer { scaleX = scale; scaleY = scale }
+                )
 
                 val interaction2 = remember { MutableInteractionSource() }
                 val pressed2 by interaction2.collectIsPressedAsState()
                 val scale2 by animateFloatAsState(if (pressed2) 0.95f else 1f)
 
-                Button(
+                KvantorButton(
+                    text = "Continue",
                     onClick = onContinueCourse,
-                    modifier          = Modifier
+                    leadingIcon = Icons.Default.PlayArrow,
+                    modifier = Modifier
                         .weight(1f)
-                        .graphicsLayer { scaleX = scale2; scaleY = scale2 },
-                    interactionSource = interaction2,
-                    shape             = RoundedCornerShape(8.dp),
-                    colors            = ButtonDefaults.buttonColors(
-                        containerColor = cs.primary,
-                        contentColor   = cs.onPrimary
-                    )
-                ) {
-                    Text("Продовжити курс", fontFamily = Rubik)
-                }
+                        .graphicsLayer { scaleX = scale2; scaleY = scale2 }
+                )
             }
+            Spacer(Modifier.height(16.dp))
         }
     }
 }

@@ -30,7 +30,7 @@ fun PageDto.toPageOrNull(): Page? {
                 codeReviewPlaceholder = codeReviewPlaceholder ?: "",
                 hint     = hint
             )
-            "final" -> Page.Final(message ?: "🎉 Вітаємо! Ви завершили модуль.")
+            "final" -> Page.Final(message ?: "Congratulations! You completed the module.")
             else -> null
         }
     } catch (e: Exception) {

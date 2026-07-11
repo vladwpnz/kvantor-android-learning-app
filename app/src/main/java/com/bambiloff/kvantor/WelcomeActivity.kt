@@ -5,25 +5,25 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.bambiloff.kvantor.ui.theme.KvantorTheme
-import com.bambiloff.kvantor.ui.theme.Rubik // ← імпорт шрифту
+import com.bambiloff.kvantor.ui.theme.Rubik
 
 class WelcomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val nickname = intent.getStringExtra("nickname") ?: "Гість"
+        val nickname = intent.getStringExtra("nickname") ?: "Guest"
         val avatarResId = intent.getIntExtra("avatarResId", R.drawable.default_avatar)
 
         setContent {
@@ -40,47 +40,57 @@ class WelcomeActivity : ComponentActivity() {
 
 @Composable
 fun WelcomeScreen(nickname: String, avatarResId: Int, onStartClick: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF390D58))
-            .padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Image(
-            painter = painterResource(id = avatarResId),
-            contentDescription = "Avatar",
-            modifier = Modifier.size(128.dp)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "Привіт, $nickname!",
-            color = Color(0xFF1DE0FF),
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            fontFamily = Rubik
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Text(
-            text = "Ласкаво просимо до Kvantor!\nЦе додаток, де ти зможеш вивчити програмування у формі квестів.",
-            color = Color.White,
-            fontSize = 16.sp,
-            lineHeight = 22.sp,
-            fontFamily = Rubik
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Button(
-            onClick = onStartClick,
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1DE0FF))
+    KvGradientBackground(contentAlignment = Alignment.Center) {
+        KvGlassCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            contentPadding = PaddingValues(24.dp)
         ) {
-            Text("Розпочати", color = Color.Black, fontFamily = Rubik)
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Surface(
+                    shape = MaterialTheme.shapes.large,
+                    color = KvSurfaceHi.copy(alpha = .9f)
+                ) {
+                    Image(
+                        painter = painterResource(id = avatarResId),
+                        contentDescription = "Avatar",
+                        modifier = Modifier
+                            .size(128.dp)
+                            .padding(10.dp)
+                    )
+                }
+
+                Text(
+                    text = "Hi, $nickname!",
+                    color = KvCyan,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = Rubik,
+                    textAlign = TextAlign.Center
+                )
+
+                Text(
+                    text = "Welcome to Kvantor!\nLearn programming through quests, practice, and rewards.",
+                    color = KvMutedText,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontFamily = Rubik,
+                    textAlign = TextAlign.Center
+                )
+
+                KvantorButton(
+                    text = "Start",
+                    onClick = onStartClick,
+                    leadingIcon = Icons.Default.PlayArrow,
+                    containerColor = KvCyan,
+                    contentColor = KvInk,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
     }
 }

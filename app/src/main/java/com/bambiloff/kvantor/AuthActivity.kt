@@ -8,23 +8,26 @@ import androidx.activity.compose.setContent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Login
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.bambiloff.kvantor.ui.theme.KvantorTheme
 import com.bambiloff.kvantor.ui.theme.Rubik
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -78,7 +81,7 @@ class AuthActivity : ComponentActivity() {
             .addOnFailureListener {
                 Toast.makeText(
                     this,
-                    "Не вдалося перевірити профіль",
+                    "Could not check your profile",
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -120,135 +123,134 @@ class AuthActivity : ComponentActivity() {
                                 activity.navigateBasedOnUserProfile()
                             } else {
                                 scope.launch {
-                                    snackbarHostState.showSnackbar("Помилка авторизації через Google")
+                                    snackbarHostState.showSnackbar("Google sign-in failed")
                                 }
                             }
                         }
                 }
             } else {
                 scope.launch {
-                    snackbarHostState.showSnackbar("Помилка Google-входу")
+                    snackbarHostState.showSnackbar("Google sign-in failed")
                 }
             }
         }
 
         Scaffold(
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-            containerColor = Color(0xFF390D58)
+            containerColor = KvBg
         ) { paddingValues ->
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .background(Color(0xFF390D58))
-                    .padding(vertical = 32.dp),
+            KvGradientBackground(
+                modifier = Modifier.padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
                 Column(
-                    Modifier
-                        .fillMaxWidth(0.9f)
-                        .padding(horizontal = 32.dp, vertical = 48.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 24.dp, vertical = 20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
                 ) {
-                    Text(
-                        "KVANTOR",
-                        color      = Color(0xFF1DE0FF),
-                        fontSize   = 48.sp,
-                        fontFamily = Rubik,
-                        textAlign  = TextAlign.Center
-                    )
+                    KvGlassCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = PaddingValues(20.dp)
+                    ) {
+                        Text(
+                            "KVANTOR",
+                            color = KvCyan,
+                            style = MaterialTheme.typography.displayMedium,
+                            fontFamily = Rubik,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Text(
+                            "Sign in to continue your learning quest",
+                            color = KvMutedText,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontFamily = Rubik,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
 
-                    Spacer(Modifier.height(32.dp))
+                        OutlinedTextField(
+                            value = email,
+                            onValueChange = { email = it },
+                            label = { Text("Email", fontFamily = Rubik) },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            textStyle = LocalTextStyle.current.copy(color = KvTextColor, fontFamily = Rubik),
+                            leadingIcon = {
+                                Icon(Icons.Default.Email, contentDescription = null, tint = KvCyan)
+                            },
+                            colors = KvOutlinedTextFieldColors()
+                        )
 
-                    // Email-поле
-                    OutlinedTextField(
-                        value         = email,
-                        onValueChange = { email = it },
-                        label         = { Text("Email", color = Color.White, fontFamily = Rubik) },
-                        singleLine    = true,
-                        modifier      = Modifier.fillMaxWidth(),
-                        textStyle     = LocalTextStyle.current.copy(color = Color.White, fontFamily = Rubik)
-                    )
+                        OutlinedTextField(
+                            value = password,
+                            onValueChange = { password = it },
+                            label = { Text("Password", fontFamily = Rubik) },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            textStyle = LocalTextStyle.current.copy(color = KvTextColor, fontFamily = Rubik),
+                            visualTransformation = if (passwordVisible)
+                                VisualTransformation.None
+                            else
+                                PasswordVisualTransformation(),
+                            leadingIcon = {
+                                Icon(Icons.Default.Lock, contentDescription = null, tint = KvCyan)
+                            },
+                            trailingIcon = {
+                                IconButton(
+                                    onClick = { passwordVisible = !passwordVisible }
+                                ) {
+                                    Icon(
+                                        imageVector = if (passwordVisible)
+                                            Icons.Filled.Visibility
+                                        else
+                                            Icons.Filled.VisibilityOff,
+                                        contentDescription = if (passwordVisible) "Hide password" else "Show password",
+                                        tint = KvMutedText
+                                    )
+                                }
+                            },
+                            colors = KvOutlinedTextFieldColors()
+                        )
 
-                    Spacer(Modifier.height(16.dp))
-
-                    // Password-поле
-                    OutlinedTextField(
-                        value               = password,
-                        onValueChange       = { password = it },
-                        label               = { Text("Password", color = Color.White, fontFamily = Rubik) },
-                        singleLine          = true,
-                        modifier            = Modifier.fillMaxWidth(),
-                        textStyle           = LocalTextStyle.current.copy(color = Color.White, fontFamily = Rubik),
-                        visualTransformation = if (passwordVisible)
-                            VisualTransformation.None
-                        else
-                            PasswordVisualTransformation(),
-                        trailingIcon = {
-                            IconButton(
-                                onClick = { passwordVisible = !passwordVisible }
-                            ) {
-                                Icon(
-                                    imageVector = if (passwordVisible)
-                                        Icons.Filled.Visibility
-                                    else
-                                        Icons.Filled.VisibilityOff,
-                                    contentDescription = if (passwordVisible) "Сховати пароль" else "Показати пароль",
-                                    tint = Color.White
-                                )
-                            }
-                        }
-                    )
-
-                    Spacer(Modifier.height(24.dp))
-
-                    // Кнопка "Увійти"
-                    Button(
-                        onClick = {
-                            auth.signInWithEmailAndPassword(email.trim(), password)
-                                .addOnCompleteListener { t ->
-                                    if (t.isSuccessful) {
-                                        activity.navigateBasedOnUserProfile()
-                                    } else {
-                                        scope.launch {
-                                            snackbarHostState.showSnackbar("Невірна пошта або пароль")
+                        KvantorButton(
+                            text = "Sign in",
+                            onClick = {
+                                auth.signInWithEmailAndPassword(email.trim(), password)
+                                    .addOnCompleteListener { t ->
+                                        if (t.isSuccessful) {
+                                            activity.navigateBasedOnUserProfile()
+                                        } else {
+                                            scope.launch {
+                                                snackbarHostState.showSnackbar("Incorrect email or password")
+                                            }
                                         }
                                     }
-                                }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape    = RoundedCornerShape(6.dp),
-                        colors   = ButtonDefaults.buttonColors(containerColor = Color(0xFF8C52FF))
-                    ) {
-                        Text("Увійти", fontFamily = Rubik)
-                    }
+                            },
+                            leadingIcon = Icons.AutoMirrored.Filled.Login,
+                            modifier = Modifier.fillMaxWidth()
+                        )
 
-                    Spacer(Modifier.height(6.dp))
+                        KvantorOutlinedButton(
+                            text = "Create account",
+                            onClick = {
+                                context.startActivity(Intent(context, RegisterActivity::class.java))
+                            },
+                            leadingIcon = Icons.Default.PersonAdd,
+                            modifier = Modifier.fillMaxWidth()
+                        )
 
-                    // Кнопка "Реєстрація"
-                    OutlinedButton(
-                        onClick  = {
-                            context.startActivity(Intent(context, RegisterActivity::class.java))
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape    = RoundedCornerShape(6.dp),
-                        colors   = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
-                    ) {
-                        Text("Реєстрація", fontFamily = Rubik)
-                    }
-
-                    Spacer(Modifier.height(10.dp))
-
-                    // Кнопка "Продовжити з Google"
-                    OutlinedButton(
-                        onClick  = {
-                            googleLauncher.launch(googleClient.signInIntent)
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape    = RoundedCornerShape(6.dp),
-                        colors   = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
-                    ) {
-                        Text("Продовжити з Google", fontFamily = Rubik)
+                        KvantorOutlinedButton(
+                            text = "Continue with Google",
+                            onClick = {
+                                googleLauncher.launch(googleClient.signInIntent)
+                            },
+                            leadingIcon = Icons.Default.AccountCircle,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
                 }
             }

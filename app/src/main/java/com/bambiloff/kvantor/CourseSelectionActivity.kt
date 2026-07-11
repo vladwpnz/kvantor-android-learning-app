@@ -6,8 +6,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -16,16 +16,21 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.bambiloff.kvantor.ui.theme.KvantorTheme
 import com.google.firebase.auth.FirebaseAuth
@@ -89,7 +94,6 @@ fun CourseSelectionScreen(
     isDarkTheme: Boolean,
     onToggleTheme: (Boolean) -> Unit
 ) {
-    val cs  = MaterialTheme.colorScheme
     val ctx = LocalContext.current
 
     /* --------- Аватар з Firestore --------- */
@@ -107,105 +111,153 @@ fun CourseSelectionScreen(
             }
     }
 
+    KvGradientBackground(darkTheme = isDarkTheme) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(cs.background)
             .verticalScroll(rememberScrollState())
-            .padding(24.dp),
+            .padding(horizontal = 24.dp, vertical = 14.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         /* ─────────── Top Row ─────────── */
         Row(
             Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp),
+                .padding(bottom = 18.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment     = Alignment.CenterVertically
         ) {
-            IconToggleButton(
-                modifier = Modifier.testTag("toggle_theme"),
-                checked         = isDarkTheme,
-                onCheckedChange = onToggleTheme
+            Surface(
+                shape = MaterialTheme.shapes.medium,
+                color = KvSurface.copy(alpha = .78f),
+                border = BorderStroke(1.dp, KvAccentSoft.copy(alpha = .22f))
             ) {
-                Icon(
-                    imageVector       = if (isDarkTheme) Icons.Default.DarkMode else Icons.Default.LightMode,
-                    contentDescription = "Перемкнути тему",
-                    tint               = cs.primary
-                )
+                IconToggleButton(
+                    modifier = Modifier.testTag("toggle_theme"),
+                    checked         = isDarkTheme,
+                    onCheckedChange = onToggleTheme
+                ) {
+                    Icon(
+                        imageVector       = if (isDarkTheme) Icons.Default.DarkMode else Icons.Default.LightMode,
+                        contentDescription = "Toggle theme",
+                        tint               = KvCyan
+                    )
+                }
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(
-                    modifier = Modifier.testTag("btn_shop"),
-                    onClick = {
-                        ctx.startActivity(Intent(ctx, ShopActivity::class.java))
-                    }
+                Surface(
+                    shape = MaterialTheme.shapes.medium,
+                    color = KvSurface.copy(alpha = .78f),
+                    border = BorderStroke(1.dp, KvAccentSoft.copy(alpha = .22f))
                 ) {
-                    Icon(
-                        Icons.Default.ShoppingCart,
-                        contentDescription = "Магазин",
-                        tint               = cs.primary
-                    )
+                    IconButton(
+                        modifier = Modifier.testTag("btn_shop"),
+                        onClick = {
+                            ctx.startActivity(Intent(ctx, ShopActivity::class.java))
+                        }
+                    ) {
+                        Icon(
+                            Icons.Default.ShoppingCart,
+                            contentDescription = "Shop",
+                            tint               = KvCyan
+                        )
+                    }
                 }
 
                 Spacer(Modifier.width(8.dp))
 
-                Image(
-                    painter            = painterResource(id = avatarResId),
-                    contentDescription = "Профіль",
-                    modifier           = Modifier
-                        .size(36.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .testTag("avatar")
-                        .clickable {
-                            ctx.startActivity(Intent(ctx, ProfileActivity::class.java))
-                        }
-                )
+                Surface(
+                    shape = MaterialTheme.shapes.medium,
+                    color = KvSurface.copy(alpha = .78f),
+                    border = BorderStroke(1.dp, KvCyan.copy(alpha = .35f))
+                ) {
+                    Image(
+                        painter            = painterResource(id = avatarResId),
+                        contentDescription = "Profile",
+                        modifier           = Modifier
+                            .size(46.dp)
+                            .padding(5.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .testTag("avatar")
+                            .clickable {
+                                ctx.startActivity(Intent(ctx, ProfileActivity::class.java))
+                            }
+                    )
+                }
             }
         }
 
         /* ─────────── Заголовок ─────────── */
-        Icon(
-            imageVector       = Icons.Default.School,
-            contentDescription = null,
-            tint              = cs.primary,
-            modifier          = Modifier.size(96.dp)
-        )
+        KvGlassCard(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(22.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Surface(
+                    shape = MaterialTheme.shapes.large,
+                    color = KvCyan.copy(alpha = .16f)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.School,
+                        contentDescription = null,
+                        tint = KvCyan,
+                        modifier = Modifier
+                            .size(64.dp)
+                            .padding(14.dp)
+                    )
+                }
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(
+                        text = "Choose a course",
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = KvTextColor,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Build skills, complete modules, and unlock achievements.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = KvMutedText
+                    )
+                }
+            }
+        }
         Spacer(Modifier.height(16.dp))
-        Text(
-            text  = "Обери курс",
-            style = MaterialTheme.typography.headlineMedium,
-            color = cs.onBackground
-        )
-        Spacer(Modifier.height(32.dp))
 
         /* ─────────── Кнопки курсів ─────────── */
         CourseButton(
             title       = "Python",
-            description = "Базові концепції та практичні задачі",
+            description = "Core concepts and practical coding tasks",
+            icon        = Icons.Default.Code,
+            accent      = KvCyan,
             onClick     = { onSelect("python") },
-            cs          = cs,
             tag         = "btn_python"
         )
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(10.dp))
         CourseButton(
             title       = "JavaScript",
-            description = "Основи веб-розробки та DOM-маніпуляції",
+            description = "Web basics, logic, and DOM practice",
+            icon        = Icons.Default.DataObject,
+            accent      = KvGold,
             onClick     = { onSelect("javascript") },
-            cs          = cs,
             tag         = "btn_js"
         )
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(10.dp))
         CourseButton(
-            title       = "AI-помічник",
-            description = "Чат із ШІ та code-review",
+            title       = "AI Assistant",
+            description = "Chat, hints, and code review",
+            icon        = Icons.Default.Psychology,
+            accent      = KvAccentSoft,
             onClick     = {
                 ctx.startActivity(Intent(ctx, AiAssistantActivity::class.java))
             },
-            cs          = cs,
             tag         = "btn_ai"
         )
+    }
     }
 }
 
@@ -215,8 +267,9 @@ fun CourseSelectionScreen(
 private fun CourseButton(
     title: String,
     description: String,
+    icon: ImageVector,
+    accent: Color,
     onClick: () -> Unit,
-    cs: ColorScheme,
     tag: String
 ) {
     val interaction = remember { MutableInteractionSource() }
@@ -232,18 +285,48 @@ private fun CourseButton(
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .padding(vertical = 4.dp),
         shape  = RoundedCornerShape(8.dp),
+        border = BorderStroke(1.dp, accent.copy(alpha = .3f)),
+        contentPadding = PaddingValues(16.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = cs.primary,
-            contentColor   = cs.onPrimary
+            containerColor = KvSurface.copy(alpha = .92f),
+            contentColor   = KvTextColor
         )
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(title, style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(4.dp))
-            Text(
-                text  = description,
-                style = MaterialTheme.typography.bodySmall,
-                color = cs.onPrimary.copy(alpha = .9f)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = accent.copy(alpha = .16f)
+            ) {
+                Icon(
+                    icon,
+                    contentDescription = null,
+                    tint = accent,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .padding(11.dp)
+                )
+            }
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
+                Text(title, style = MaterialTheme.typography.titleMedium, color = KvTextColor)
+                Text(
+                    text  = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = KvMutedText,
+                    textAlign = TextAlign.Start
+                )
+            }
+            Icon(
+                Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = null,
+                tint = accent,
+                modifier = Modifier.size(20.dp)
             )
         }
     }
