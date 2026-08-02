@@ -1,155 +1,465 @@
+<div align="center">
+
 # Kvantor
 
-Kvantor is an Android learning application for programming courses.  
-The app is focused on interactive learning, course navigation, user profile management, progress tracking, and AI-assisted learning.
+### Interactive Android application for learning programming
+
+Learn Python and JavaScript through structured modules, practical exercises,
+quizzes, progress tracking, achievements, and AI-assisted learning.
+
+![Kotlin](https://img.shields.io/badge/Kotlin-2.0-7F52FF?logo=kotlin&logoColor=white)
+![Android](https://img.shields.io/badge/Android-API%2021%2B-3DDC84?logo=android&logoColor=white)
+![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose-Material_3-4285F4?logo=jetpackcompose&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-Authentication-FFCA28?logo=firebase&logoColor=black)
+![Firestore](https://img.shields.io/badge/Cloud_Firestore-Progress_Data-FF6F00?logo=firebase&logoColor=white)
+![Retrofit](https://img.shields.io/badge/Retrofit-AI_Backend-48B983)
+
+</div>
+
+---
 
 ## Overview
 
-The application allows users to choose a programming course, open learning modules, manage their profile, switch between light and dark themes, and use an AI assistant through a chat-style interface.
+Kvantor is an Android learning application designed to make introductory
+programming education more interactive.
 
-The project was created as a portfolio Android application to demonstrate Kotlin, Jetpack Compose, Firebase integration, and mobile app architecture basics.
+The application allows users to create an account, configure a profile,
+choose between Python and JavaScript courses, open structured learning
+modules, complete quizzes and coding tasks, track progress, unlock
+achievements, and communicate with an AI assistant.
 
-## Features
+The project was developed as a portfolio and university project to
+demonstrate practical Android development with Kotlin, Jetpack Compose,
+Firebase, Firestore, Retrofit, Coroutines, and Material 3.
 
-- Course selection screen for programming courses
-- Python and JavaScript learning sections
-- AI assistant with a chat-style interface
-- User profile screen
-- Avatar support
-- Dark and light theme switching
+---
+
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img
+        src="docs/media/course-selection.png"
+        alt="Kvantor course selection screen"
+        width="300"
+      >
+      <br>
+      <strong>Course Selection</strong>
+      <br>
+      Choose Python, JavaScript, or open the AI Assistant.
+    </td>
+    <td align="center" width="50%">
+      <img
+        src="docs/media/python-course.png"
+        alt="Kvantor Python course modules"
+        width="300"
+      >
+      <br>
+      <strong>Python Course</strong>
+      <br>
+      Structured topics, practical exercises, quizzes, and code review.
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <img
+        src="docs/media/ai-assistant.png"
+        alt="Kvantor AI Assistant screen"
+        width="300"
+      >
+      <br>
+      <strong>AI Assistant</strong>
+      <br>
+      Ask questions about programming, lessons, code, and errors.
+    </td>
+    <td align="center" width="50%">
+      <img
+        src="docs/media/profile-achievements.png"
+        alt="Kvantor profile and achievements screen"
+        width="300"
+      >
+      <br>
+      <strong>Profile and Achievements</strong>
+      <br>
+      Track personal progress and unlocked achievements.
+    </td>
+  </tr>
+</table>
+
+---
+
+## Main Features
+
+### Authentication and Profile
+
+- Email and password registration
+- Email and password login
 - Firebase Authentication integration
-- Cloud Firestore integration for user data and progress
+- User profile setup
+- Nickname selection
+- Avatar selection
+- Persistent user information
+- Authentication-aware application flow
+- Logout support
+
+### Programming Courses
+
+- Python learning course
+- JavaScript learning course
+- Structured topic navigation
+- Course overview pages
+- Introduction modules
+- Variables
+- Loops
+- Conditions
+- Functions
+- Lists and dictionaries
+- Course restart option
+- Continue from saved progress
+
+### Interactive Learning
+
+- Theory pages
+- Multiple-choice questions
+- Coding exercises
+- Manual lesson navigation
+- Answer validation
+- Learning progress tracking
+- Module completion state
+- Firestore-backed progress storage
+- AI-assisted code review support
+
+### Gamification
+
+- Lives system
+- Hints system
+- Coins
+- Achievement tracking
+- Progress indicator
+- Locked and unlocked achievements
+- In-application shop
+- Life and hint purchases
+
+### AI Assistant
+
+- Dedicated chat-style interface
+- User and assistant messages
+- Programming question support
+- Lesson explanation support
+- Error analysis
+- Code-related assistance
+- Retrofit-based backend communication
+- Kotlin Coroutines for asynchronous requests
+
+### Interface
+
 - Jetpack Compose UI
 - Material 3 components
-- Retrofit-based communication with a local backend API
-- Kotlin Coroutines
-- Basic UI testing support using Compose test tags
+- Dark theme
+- Light theme
+- Responsive layouts
+- Custom purple and cyan visual identity
+- Reusable application components
+- Loading and error states
 
-## Tech Stack
+---
+
+## Learning Flow
+
+```text
+Splash screen
+→ Authentication
+→ Registration or login
+→ Profile setup
+→ Welcome screen
+→ Course selection
+→ Python or JavaScript course
+→ Topic selection
+→ Theory
+→ Quiz
+→ Coding task
+→ Progress update
+→ Achievement unlock
+```
+
+The AI Assistant, profile, achievements, and shop can be accessed from the
+main application flow.
+
+---
+
+## Technology Stack
+
+### Android
 
 - Kotlin
 - Android SDK
 - Jetpack Compose
 - Material 3
-- Firebase Authentication
-- Cloud Firestore
-- Retrofit
-- OkHttp
+- AndroidX Lifecycle
+- ViewModel
 - Kotlin Coroutines
 - Gradle Kotlin DSL
 
-## Main Screens
+### Firebase
 
-- Welcome screen
-- Authentication screen
-- Registration screen
-- Profile setup screen
-- Course selection screen
-- Python course screen
-- JavaScript course screen
-- Lesson screen
-- AI assistant screen
-- Profile screen
-- Shop screen
+- Firebase Authentication
+- Cloud Firestore
+- Google Services Gradle plugin
+- Firestore-backed user profiles
+- Firestore-backed course progress
+- Firestore-backed gamification data
+
+### Networking
+
+- Retrofit
+- Gson Converter
+- OkHttp
+- OkHttp Logging Interceptor
+- Local REST API integration
+
+### Testing
+
+- JUnit
+- AndroidX Test
+- Espresso
+- Jetpack Compose UI testing
+- Compose test tags
+
+---
+
+## Project Configuration
+
+```text
+Application ID: com.bambiloff.kvantor
+Minimum Android SDK: 21
+Target Android SDK: 35
+Compile Android SDK: 35
+Java compatibility: 11
+Gradle JDK: 17 recommended
+```
+
+---
 
 ## Project Structure
 
 ```text
 app/
- ├── src/main/
- │   ├── java/com/bambiloff/kvantor/
- │   │   ├── AuthActivity.kt
- │   │   ├── RegisterActivity.kt
- │   │   ├── WelcomeActivity.kt
- │   │   ├── ProfileSetupActivity.kt
- │   │   ├── CourseSelectionActivity.kt
- │   │   ├── MainActivity.kt
- │   │   ├── JavaScriptMainActivity.kt
- │   │   ├── LessonActivity.kt
- │   │   ├── AiAssistantActivity.kt
- │   │   ├── AiAssistantScreen.kt
- │   │   ├── AiAssistantViewModel.kt
- │   │   ├── AiRepository.kt
- │   │   ├── ProfileActivity.kt
- │   │   └── ShopActivity.kt
- │   └── AndroidManifest.xml
- └── build.gradle.kts
+├── src/
+│   ├── main/
+│   │   ├── java/com/bambiloff/kvantor/
+│   │   │   ├── SplashActivity.kt
+│   │   │   ├── AuthActivity.kt
+│   │   │   ├── RegisterActivity.kt
+│   │   │   ├── ProfileSetupActivity.kt
+│   │   │   ├── WelcomeActivity.kt
+│   │   │   ├── CourseSelectionActivity.kt
+│   │   │   ├── MainActivity.kt
+│   │   │   ├── JavaScriptMainActivity.kt
+│   │   │   ├── LessonActivity.kt
+│   │   │   ├── AiAssistantActivity.kt
+│   │   │   ├── AiAssistantScreen.kt
+│   │   │   ├── AiAssistantViewModel.kt
+│   │   │   ├── AiRepository.kt
+│   │   │   ├── ProfileActivity.kt
+│   │   │   └── ShopActivity.kt
+│   │   ├── res/
+│   │   └── AndroidManifest.xml
+│   ├── androidTest/
+│   └── test/
+├── build.gradle.kts
+└── google-services.json
 ```
 
-## AI Assistant
+The project uses several Android activities together with Jetpack Compose
+screens, ViewModels, Firebase services, and repository classes.
 
-The AI assistant screen uses Retrofit to send user prompts to a local backend API.
-
-Default backend URL:
-
-```text
-http://10.0.2.2:5000/
-```
-
-For Android Emulator, `10.0.2.2` is used to access the host machine localhost.
-
-The backend service is expected to provide an endpoint for processing user prompts and returning AI-generated responses.
+---
 
 ## Firebase Integration
 
-The application uses Firebase for authentication and user-related data storage.
+Kvantor uses Firebase for user authentication and application data.
 
-Used Firebase services:
+Firebase services used by the application:
 
 - Firebase Authentication
 - Cloud Firestore
 
-Firestore is used for storing user data, selected course information, avatar data, and learning progress.
+Firestore stores information such as:
 
-## Getting Started
-
-### Prerequisites
-
-Before running the project, make sure you have:
-
-- Android Studio
-- JDK 11 or higher
-- Android SDK
-- Firebase project
-- Firebase configuration file
-
-### Installation
-
-1. Clone the repository:
-
-```bash
-git clone https://github.com/vladwpnz/Kvantor.git
+```text
+User profile
+Nickname
+Avatar
+Selected course
+Learning progress
+Completed modules
+Achievements
+Lives
+Hints
+Coins
 ```
 
-2. Open the project in Android Studio.
+To connect the application to another Firebase project:
 
-3. Sync Gradle dependencies.
+1. Create a Firebase project.
+2. Register an Android application with the package:
 
-4. Add Firebase configuration file if needed:
+```text
+com.bambiloff.kvantor
+```
+
+3. Enable Email/Password authentication.
+4. Create a Cloud Firestore database.
+5. Download the Firebase configuration file.
+6. Place it at:
 
 ```text
 app/google-services.json
 ```
 
-5. Run the project on an Android Emulator or a physical Android device.
+7. Configure the required Firestore collections and documents.
 
-## Running with AI Assistant
+---
 
-To use the AI assistant, a local backend server should be running on the host machine.
+## AI Assistant
 
-The Android Emulator accesses the host machine through:
+The AI Assistant communicates with a local backend service through Retrofit.
+
+Default emulator backend address:
 
 ```text
 http://10.0.2.2:5000/
 ```
 
-If you run the application on a physical device, the backend URL should be changed to the local network IP address of your computer.
+Request endpoint:
 
-## Notes
+```text
+POST /ask
+```
 
-This project is a portfolio Android application created for learning and demonstration purposes.  
-It shows practical usage of Kotlin, Jetpack Compose, Firebase, Firestore, Retrofit, and basic Android application structure.
+Request body:
+
+```json
+{
+  "prompt": "Explain Python variables"
+}
+```
+
+Expected response:
+
+```json
+{
+  "response": "A variable is a named value stored in memory..."
+}
+```
+
+For the Android Emulator, `10.0.2.2` points to the host computer.
+
+When using a physical Android device, replace the backend address with the
+local network IP address of the computer running the backend.
+
+The main application can be opened without the AI backend, but sending
+messages through the AI Assistant requires a compatible server.
+
+---
+
+## Getting Started
+
+### Requirements
+
+- Android Studio
+- JDK 17
+- Android SDK 35
+- Android Emulator or physical Android device
+- Firebase project
+- Internet connection for Firebase features
+- Optional local backend for the AI Assistant
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/vladwpnz/kvantor-android-learning-app.git
+cd kvantor-android-learning-app
+```
+
+### Open the Project
+
+1. Open Android Studio.
+2. Select **Open**.
+3. Choose the root `kvantor-android-learning-app` folder.
+4. Wait for Gradle synchronization.
+5. Select the `app` run configuration.
+6. Choose an Android Emulator or physical device.
+7. Run the application.
+
+### Build from the Command Line
+
+On Windows:
+
+```powershell
+.\gradlew.bat clean
+.\gradlew.bat assembleDebug
+```
+
+On macOS or Linux:
+
+```bash
+./gradlew clean
+./gradlew assembleDebug
+```
+
+The generated APK is normally located at:
+
+```text
+app/build/outputs/apk/debug/app-debug.apk
+```
+
+---
+
+## Current Limitations
+
+- The AI Assistant requires a separately running backend
+- Course content is limited to Python and JavaScript
+- Some learning content depends on existing Firestore data
+- No production backend deployment is included
+- No offline synchronization
+- No push notifications
+- No production release signing configuration
+- The application uses an activity-oriented structure rather than a single navigation graph
+
+---
+
+## Roadmap
+
+- Expand Python and JavaScript course content
+- Add additional programming languages
+- Improve coding-task evaluation
+- Deploy the AI backend
+- Add offline lesson support
+- Add push notifications
+- Add more achievements
+- Synchronize progress across devices
+- Improve automated test coverage
+- Prepare a production Android release
+
+---
 
 ## Author
 
-Vladyslav Spyrydonov
+**Vladyslav Spyrydonov**
+
+GitHub: [@vladwpnz](https://github.com/vladwpnz)
+
+Repository:
+[vladwpnz/kvantor-android-learning-app](https://github.com/vladwpnz/kvantor-android-learning-app)
+
+---
+
+<div align="center">
+
+Kvantor is an independently developed Android learning project.
+
+Built with Kotlin, Jetpack Compose, Firebase, and Retrofit.
+
+</div>
